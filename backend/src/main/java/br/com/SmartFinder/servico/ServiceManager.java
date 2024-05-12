@@ -3,11 +3,11 @@ package br.com.SmartFinder.servico;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import br.com.SmartFinder.dados.IDeviceRepository;
 import br.com.SmartFinder.dados.IUserRepository;
 import br.com.SmartFinder.modelos.Device;
@@ -25,52 +25,51 @@ public class ServiceManager {
 	@Autowired
 	private IDeviceRepository repositorioDI;
 	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 	private User usuarioLogado = new User();
 
-	public ResponseEntity<?> initializeSession(UserRequest ur) {
+	public ResponseEntity<?> initializeSession(User u) {
 		
-	    if (ur.getLogin().isEmpty() || ur.getSenha().isEmpty()) {
+	    if (u.getLogin().isEmpty() || u.getSenha().isEmpty()) {
 	        this.response.setMensagem("É necessário preencher todos os campos para efetuar login");
 	        return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 	    }
 
-	    Optional<User> optionalUser = this.repositorioUI.findByLogin(ur.getLogin());
-	    
-	    if (optionalUser.isEmpty()) {
-	    	
-	        this.response.setMensagem("Não foi encontrado usuário com os dados informados");
-	        return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-	        
-	    }
+		else{
 
-	    User userRep = optionalUser.get();
-
-	    if (!this.passwordEncoder.matches(ur.getSenha(), userRep.getSenha())) {
-	    	
-	        this.response.setMensagem("As senhas não coincidem");
-	        return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+			Optional<User> optionalUser = this.repositorioUI.findByLogin(u.getLogin());
 	    
-	    }
-	    
-	    else {
-	    	
-	    usuarioLogado = userRep;
+			if (optionalUser.isEmpty()) {
+				
+				this.response.setMensagem("Não foi encontrado usuário com os dados informados");
+				return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+				
+			}
+	
+			User userRep = optionalUser.get();
+	
+			if (!this.passwordEncoder.matches(u.getSenha(), userRep.getSenha())) {
+				
+				this.response.setMensagem("Senha incorreta, tente novamente");
+				return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+			
+			}
+			
+			else {
+	
+			return new ResponseEntity<>(this.usuarioLogado = userRep, HttpStatus.ACCEPTED);
+			
+			}
 
-	    this.response.setMensagem("Sessão inicializada com sucesso");
-	    return new ResponseEntity<>(this.response, HttpStatus.ACCEPTED);
-	    
-	    }
 
+		}
 	  
 	}
 	
 	public ResponseEntity<?> finalizeSession(){
 		
-		this.usuarioLogado = null;
-		this.response.setMensagem("Sessão finalizada");
-		return new ResponseEntity<>(this.response,HttpStatus.OK);
-		
-		
+			return new ResponseEntity<>(this.usuarioLogado = null,HttpStatus.OK);
+
 	}
 	
 	

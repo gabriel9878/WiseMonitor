@@ -1,11 +1,23 @@
+
+/* body claro */
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  
+ 
+  background: linear-gradient(90deg, #f5f7fa 0%, #c3cfe2 100%);
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  height: 100vh;
+  color:  rgba(0, 0, 0, 0.541);
+  font-family: "Montserrat", monospace;
+  text-shadow: 1px 4px 10px rgba(0, 0, 0, 0.315);
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
 }
+
+
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',

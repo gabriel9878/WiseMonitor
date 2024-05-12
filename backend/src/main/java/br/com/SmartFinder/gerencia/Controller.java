@@ -34,10 +34,10 @@ public class Controller {
 
 	}
 	
-	@GetMapping("/login")
-	public ResponseEntity<?> initializeSession(@RequestBody UserRequest ur){
+	@PostMapping("/login")
+	public ResponseEntity<?> initializeSession(@RequestBody User u){
 		
-		return this.service.initializeSession(ur);
+		return this.service.initializeSession(u);
 		
 		
 	}

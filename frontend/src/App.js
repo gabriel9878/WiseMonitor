@@ -1,184 +1,252 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 import './App.css';
-import Formulario from './Formulario';
-import Tabela from './Tabela';
+import FormCadastro from './FormCadastro';
+import FormLogin from './FormLogin';
+import Home from './Home';
+import { createBrowserRouter } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
+
 
 function App() {
-  
+
   //Objeto User
 
-  const user ={
+  const user = {
 
-    id : 0,
-    login : '',
+    id: 0,
+    login: '',
     senha: '',
-    email : '',
-    cpf:''
+    email: '',
+    cpf: ''
 
   }
 
   //UseState
-  const [btnCadastrar,setBtnCadastrar] = useState(true);
-  const [users,setUsers] = useState([]);
-  const [objUser,setObjUser] = useState(user)
+  const [btnCadastrar, setBtnCadastrar] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [objUser, setObjUser] = useState(user)
 
   //UseEffect
-  useEffect(() =>{
+  useEffect(() => {
 
-    fetch("http://localhost:8080/exibicaoUsuarios")
-      .then(resposta => resposta.json())
-      .then(respostaJson => setUsers(respostaJson))
+
 
   }, []);
 
-  const respostaTeclado = (e) =>{
+  const respostaTeclado = (e) => {
 
-      setObjUser({...objUser,[e.target.name] : e.target.value})
+    setObjUser({ ...objUser, [e.target.name]: e.target.value })
 
   }
 
-  const cadastrar = () =>{
+  const cadastrar = () => {
 
-    fetch('http://localhost:8080/cadastroUsuario',{
+    fetch('http://localhost:8080/cadastroUsuario', {
 
-      method:'post',
+      method: 'post',
       body: JSON.stringify(objUser),
-      headers:{
+      headers: {
 
         'Content-type': 'application/json',
-        'Accept' : 'application/json'
+        'Accept': 'application/json'
 
       }
 
-    })
-    .then(retorno => retorno.json())
-      .then(retornoJson =>{
+    }).then(retorno => retorno.json())
+      .then(retornoJson => {
 
-        if(retornoJson.mensagem !== undefined){
+        if (retornoJson.mensagem !== undefined) {
 
           alert(retornoJson.mensagem)
 
-        }else{
+        } else {
 
-          setUsers([...users,retornoJson])
+          setUsers([...users, retornoJson])
           alert('Usuario cadastrado com sucesso')
-          limparFormulario()
+          atualizarFormulario()
         }
 
-        
 
-      }) 
+
+      })
 
   }
 
-  const alterar = () =>{
+  const exibir = () => {
 
-    fetch('http://localhost:8080/edicaoUsuario',{
+    fetch('http://localhost:8080/exibicaoUsuarios', {
 
-      method:'put',
-      body: JSON.stringify(objUser),
-      headers:{
+      method: 'get',
+
+      headers: {
 
         'Content-type': 'application/json',
-        'Accept' : 'application/json'
+        'Accept': 'application/json'
 
       }
 
-    })
-    .then(retorno => retorno.json())
-      .then(retornoJson =>{
+    }).then(retorno => retorno.json())
+      .then(retornoJson => {
 
-        if(retornoJson.mensagem !== undefined){
+        if (retornoJson.mensagem) {
 
           alert(retornoJson.mensagem)
 
         }
-        else{
 
-          
+        else {
+
+          setUsers(retornoJson)
+
+        }
+
+      })
+
+
+
+  }
+
+  const alterar = () => {
+
+    fetch('http://localhost:8080/edicaoUsuario', {
+
+      method: 'put',
+      body: JSON.stringify(objUser),
+      headers: {
+
+        'Content-type': 'application/json',
+        'Accept': 'application/json'
+
+      }
+
+    })
+
+      .then(retorno => retorno.json())
+      .then(retornoJson => {
+
+        if (retornoJson.mensagem !== undefined) {
+
+          alert(retornoJson.mensagem)
+
+        }
+        else {
+
+
           alert('Usuario editado com sucesso')
 
           let usersTemp = [...users]
 
-          let indice = usersTemp.findIndex((u) =>{
-  
+          let indice = usersTemp.findIndex((u) => {
+
             return u.id === objUser.id
-  
+
           })
-  
+
           usersTemp[indice] = objUser
-  
+
           setUsers(usersTemp)
 
-          limparFormulario()
+          atualizarFormulario()
+
         }
 
-        
 
-      }) 
+
+      })
 
   }
 
-  const remover = () =>{
+  const remover = () => {
 
-    fetch('http://localhost:8080/exclusaoUsuario-{id}' + objUser.id,{
+    fetch('http://localhost:8080/exclusaoUsuario-{id}' + objUser.id, {
 
-      method:'delete',
-      headers:{
+      method: 'delete',
+      headers: {
 
         'Content-type': 'application/json',
-        'Accept' : 'application/json'
+        'Accept': 'application/json'
 
       }
 
     })
-    .then(retorno => retorno.json())
-      .then(retornoJson =>{
+      .then(retorno => retorno.json())
+      .then(retornoJson => {
 
-        alert(retornoJson.mensagem)
+        if (retornoJson.mensagem !== undefined) {
 
-        let usersTemp = [...users]
+          alert(retornoJson.mensagem)
 
-        let indice = usersTemp.findIndex((u) =>{
+        } else {
 
-          return u.id === objUser.id
+          let usersTemp = [...users]
 
-        })
+          let indice = usersTemp.findIndex((u) => {
 
-        usersTemp.splice(indice,1)
+            return u.id === objUser.id
 
-        setUsers(usersTemp)
+          })
 
-        limparFormulario()
+          usersTemp.splice(indice, 1)
 
+          setUsers(usersTemp)
 
-      }) 
+          atualizarFormulario()
+
+        }
+
+      })
   }
 
 
-  const limparFormulario = () =>{
+  const atualizarFormulario = () => {
 
     setObjUser(user)
     setBtnCadastrar(true)
+
   }
 
-  const selecionar = (indice) =>{
+  const selecionarUsers = (id) => {
 
-    setObjUser(users[indice])
+    setObjUser(users[id])
     setBtnCadastrar(false)
 
 
   }
 
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <FormLogin eventoTeclado={respostaTeclado} obj = {objUser} />,
+
+    },
+    
+    {
+      path: "cadastrar",
+      element: <FormCadastro botao={setBtnCadastrar} eventoTeclado={respostaTeclado} cadastrar={cadastrar}
+        alterar={alterar} exibir={exibir} remover={remover} obj={objUser} />
+
+    },
+
+    {
+
+      path: "home",
+      element: <Home/>
+
+    }
+
+
+  ])
+
+
   return (
     <div>
-      
-      <Formulario botao = {btnCadastrar} eventoTeclado = {respostaTeclado} cadastrar = {cadastrar}
-      alterar = {alterar} remover = {remover}obj = {objUser} cancelar={limparFormulario}/>
-      <Tabela usersList = {users} selecionarUsers ={selecionar}/>
-    
-     </div>
+
+      <RouterProvider router={router} />
+
+    </div>
+
+
   );
 }
 
