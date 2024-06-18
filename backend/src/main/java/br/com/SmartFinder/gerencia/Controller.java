@@ -1,7 +1,5 @@
 package br.com.SmartFinder.gerencia;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,10 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
-import br.com.SmartFinder.modelos.Device;
-import br.com.SmartFinder.modelos.User;
-import br.com.SmartFinder.modelos.UserRequest;
+import br.com.SmartFinder.modelos.DeviceDto;
+import br.com.SmartFinder.modelos.UserDto;
 import br.com.SmartFinder.servico.ServiceManager;
 
 @RestController
@@ -24,18 +20,23 @@ import br.com.SmartFinder.servico.ServiceManager;
 @RequestMapping("/")
 public class Controller {
 
-	@Autowired
-	private ServiceManager service;
+	
+	private final ServiceManager service;
+
+
+	public Controller(ServiceManager service) {
+		this.service = service;
+	}
 
 	@GetMapping("/")
 	public String loadInitialPage() {
 
-		return "Bem vindo ao SmartFinder";
+		return "";
 
 	}
 	
 	@PostMapping("/login")
-	public ResponseEntity<?> initializeSession(@RequestBody User u){
+	public ResponseEntity<?> initializeSession(@RequestBody UserDto u){
 		
 		return this.service.initializeSession(u);
 		
@@ -66,7 +67,7 @@ public class Controller {
 
 
 	@PostMapping("/cadastroUsuario")
-	public ResponseEntity<?> registerUser(@RequestBody User u) {
+	public ResponseEntity<?> registerUser(@RequestBody UserDto u) {
 
 		return this.service.registerUser(u);
 
@@ -80,7 +81,7 @@ public class Controller {
 	}
 
 	@PutMapping("/edicaoUsuario")
-	public ResponseEntity<?> editUser(@RequestBody User u) {
+	public ResponseEntity<?> editUser(@RequestBody UserDto u) {
 
 		return this.service.editUser(u);
 
@@ -103,7 +104,7 @@ public class Controller {
 	
 	
 	@PostMapping("/cadastroDispositivo")
-	public ResponseEntity<?> registerDevice(@RequestBody Device d) {
+	public ResponseEntity<?> registerDevice(@RequestBody DeviceDto d) {
 
 		return this.service.registerDevice(d);
 
@@ -117,7 +118,7 @@ public class Controller {
 	}
 
 	@PutMapping("/edicaoDispositivo")
-	public ResponseEntity<?> editDevice(@RequestBody Device d) {
+	public ResponseEntity<?> editDevice(@RequestBody DeviceDto d) {
 			
 		return this.service.editDevice(d);
 

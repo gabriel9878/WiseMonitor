@@ -2,276 +2,274 @@ package br.com.SmartFinder.servico;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import br.com.SmartFinder.dados.IDeviceRepository;
 import br.com.SmartFinder.dados.IUserRepository;
 import br.com.SmartFinder.modelos.Device;
+import br.com.SmartFinder.modelos.DeviceDto;
 import br.com.SmartFinder.modelos.ResponseMessage;
 import br.com.SmartFinder.modelos.User;
-import br.com.SmartFinder.modelos.UserRequest;
+import br.com.SmartFinder.modelos.UserDto;
+import br.com.SmartFinder.modelos.UserResponseDto;
 
 @Service
 public class ServiceManager {
 
-	@Autowired
-	private ResponseMessage response;
-	@Autowired
-	private IUserRepository repositorioUI;
-	@Autowired
-	private IDeviceRepository repositorioDI;
-	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final ResponseMessage response;
 
-	private User usuarioLogado = new User();
+    private final IUserRepository repositorioUI;
+    private final IDeviceRepository repositorioDI;
 
-	public ResponseEntity<?> initializeSession(User u) {
-		
-	    if (u.getLogin().isEmpty() || u.getSenha().isEmpty()) {
-	        this.response.setMensagem("É necessário preencher todos os campos para efetuar login");
-	        return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-	    }
+    private final BCryptPasswordEncoder passwordEncoder;
+    private User usuarioLogado;
 
-		else{
-
-			Optional<User> optionalUser = this.repositorioUI.findByLogin(u.getLogin());
-	    
-			if (optionalUser.isEmpty()) {
-				
-				this.response.setMensagem("Não foi encontrado usuário com os dados informados");
-				return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-				
-			}
 	
-			User userRep = optionalUser.get();
-	
-			if (!this.passwordEncoder.matches(u.getSenha(), userRep.getSenha())) {
-				
-				this.response.setMensagem("Senha incorreta, tente novamente");
-				return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-			
-			}
-			
-			else {
-	
-			return new ResponseEntity<>(this.usuarioLogado = userRep, HttpStatus.ACCEPTED);
-			
-			}
+    public ServiceManager(ResponseMessage response, IUserRepository repositorioUI, IDeviceRepository repositorioDI) {
 
+        this.response = response;
+        this.repositorioUI = repositorioUI;
+        this.repositorioDI = repositorioDI;
+		this.usuarioLogado = null;
+        this.passwordEncoder = new BCryptPasswordEncoder();
 
-		}
-	  
-	}
-	
-	public ResponseEntity<?> finalizeSession(){
-		
-			return new ResponseEntity<>(this.usuarioLogado = null,HttpStatus.OK);
+    }
 
-	}
-	
-	
+    public ResponseEntity<?> initializeSession(UserDto uDto) {
 
-	public ResponseEntity<?> selectUserById(Long id) {
+        if (uDto.login().isEmpty() || uDto.senha().isEmpty()) {
+            this.response.setMensagem("É necessário preencher todos os campos para efetuar login");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+        } else {
 
-		if (this.repositorioUI.countById(id) == 0) {
+            Optional<User> optionalUser = this.repositorioUI.findByLogin(uDto.login());
 
-			this.response.setMensagem("Não há usuário com o id informado");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-		}
+            if (optionalUser.isEmpty()) {
 
-		else {
+                this.response.setMensagem("Não foi encontrado usuário com os dados informados");
+                return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-			return new ResponseEntity<>(this.repositorioUI.findById(id), HttpStatus.OK);
+            }
 
-		}
+            User userRep = optionalUser.get();
 
-	}
+            if (!this.passwordEncoder.matches(uDto.senha(), userRep.getSenha())) {
 
-	public ResponseEntity<?> selectLoggedUser() {
+                this.response.setMensagem("Senha incorreta, tente novamente");
+                return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-		if (!this.usuarioLogado.getLogin().equals("") && !this.usuarioLogado.getSenha().equals("")
-				&& !this.usuarioLogado.getEmail().equals("") && !this.usuarioLogado.getCpf().equals("")) {
+            } else {
 
-			return new ResponseEntity<>(this.usuarioLogado, HttpStatus.OK);
+                return new ResponseEntity<>(this.usuarioLogado = userRep, HttpStatus.ACCEPTED);
 
-		} else {
+            }
 
-			this.response.setMensagem("Não há usuário logado no sistema");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+        }
 
-		}
+    }
 
-	}
+    public ResponseEntity<?> finalizeSession() {
 
-	public ResponseEntity<?> registerUser(User u) {
+        return new ResponseEntity<>(this.usuarioLogado = null, HttpStatus.OK);
 
-		if (u.getLogin().equals("") || u.getSenha().equals("")|| u.getCpf().equals("") || u.getEmail().equals("")) {
+    }
 
-			this.response.setMensagem("É necessário preencher todos os campos do usuário");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> selectUserById(Long id) {
 
-		
-		}else if(this.repositorioUI.existsByLogin(u.getLogin()) || this.repositorioUI.existsByCpf(u.getCpf()) ) {
-			
-			this.response.setMensagem("Usuário já cadastrado com esse login ou cpf");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-			
-		} else {
-			// Codifica senha do usuário antes de salvar
-			u.setSenha(passwordEncoder.encode(u.getSenha()));
-			return new ResponseEntity<>(this.repositorioUI.save(u), HttpStatus.CREATED);
+        if (this.repositorioUI.countById(id) == 0) {
 
-		}
+            this.response.setMensagem("Não há usuário com o id informado");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+        } else {
+            
+            User u = repositorioUI.findById(id).orElse(null);
 
-	}
+            return new ResponseEntity<>(new UserResponseDto(u.getLogin(),u.getEmail()),HttpStatus.OK);
 
-	public ResponseEntity<?> listUsers() {
+        }
 
-		return new ResponseEntity<>(this.repositorioUI.findAll(), HttpStatus.OK);
+    }
 
-	}
+    public ResponseEntity<?> selectLoggedUser() {
 
-	public ResponseEntity<?> editUser(User u) {
-		
-		if (u.getLogin().equals("") || u.getSenha().equals("")|| u.getCpf().equals("") || u.getEmail().equals("")) {
+        if (!this.usuarioLogado.getLogin().equals("") && !this.usuarioLogado.getSenha().equals("")
+                && !this.usuarioLogado.getEmail().equals("") && !this.usuarioLogado.getCpf().equals("")) {
 
-			this.response.setMensagem("É necessário preencher todos os campos do usuário");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+                    
 
-		
-		}
-	    
-		else if (!this.repositorioUI.existsByLogin(u.getLogin())) {
-	        this.response.setMensagem("Não foi encontrado usuário com os dados informados");
-	        return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-	    }
+            return new ResponseEntity<>(new UserResponseDto(this.usuarioLogado.getLogin(),this.usuarioLogado.getEmail()), HttpStatus.OK);
 
-	  
-	    else {
+        } else {
 
-			u.setSenha(this.passwordEncoder.encode(u.getSenha()));
-			return new ResponseEntity<>(this.repositorioUI.save(u), HttpStatus.OK);
+            this.response.setMensagem("Não há usuário logado no sistema");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-		}
+        }
 
-	}
+    }
 
-	public ResponseEntity<?> deleteUser(Long id) {
+    public ResponseEntity<?> registerUser(UserDto uDto) {
 
-		if (this.repositorioUI.countById(id) == 0) {
+        if (uDto.login().equals("") || uDto.senha().equals("") || uDto.cpf().equals("") || uDto.email().equals("")) {
 
-			this.response.setMensagem("Não há usuários com o id informado");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-		}
+            this.response.setMensagem("É necessário preencher todos os campos do usuário");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-		else {
+        } else if (this.repositorioUI.existsByLogin(uDto.login()) || this.repositorioUI.existsByCpf(uDto.cpf())) {
 
-			Optional<User> obj = this.repositorioUI.findById(id);
+            this.response.setMensagem("Usuário já cadastrado com esse login ou cpf");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-			User u = new User();
+        } else {
+            
+            User u = new User(uDto.id(),uDto.login(),uDto.senha(),uDto.cpf(),uDto.email());
 
-			u = obj.get();
+            u.setSenha(passwordEncoder.encode(u.getSenha()));
+            return new ResponseEntity<>(this.repositorioUI.save(u), HttpStatus.CREATED);
 
-			this.repositorioUI.delete(u);
+        }
 
-			this.response.setMensagem("Usuario removido com sucesso");
+    }
 
-			return new ResponseEntity<>(this.response.getMensagem(), HttpStatus.OK);
+    public ResponseEntity<?> listUsers() {
 
-		}
+        return new ResponseEntity<>(this.repositorioUI.findAll().stream().map(x -> new UserResponseDto(x.getLogin(),x.getEmail())), HttpStatus.OK);
 
-	}
+    }
 
-	public ResponseEntity<?> selectDeviceById(Long id) {
+    public ResponseEntity<?> editUser(UserDto userDto) {
 
-		if (this.repositorioDI.countById(id) == 0) {
+        if (userDto.login().equals("") || userDto.senha().equals("") || userDto.cpf().equals("") || userDto.email().equals("")) {
 
-			this.response.setMensagem("Não há dispositivo com o id informado");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-		}
+            this.response.setMensagem("É necessário preencher todos os campos do usuário");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-		else {
+        } else if (!this.repositorioUI.existsByLogin(userDto.login())) {
+            this.response.setMensagem("Não foi encontrado usuário com os dados informados");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+        } else {
 
-			return new ResponseEntity<>(this.repositorioDI.findById(id), HttpStatus.OK);
+            User u = new User(userDto.id(),userDto.login(),userDto.senha(),userDto.cpf(),userDto.email());
+            u.setSenha(this.passwordEncoder.encode(u.getSenha()));
+            return new ResponseEntity<>(this.repositorioUI.save(u), HttpStatus.OK);
 
-		}
+        }
 
-	}
+    }
 
-	public ResponseEntity<?> registerDevice(Device d) {
+    public ResponseEntity<?> deleteUser(Long id) {
 
-		if (d.getNome().equals("")) {
+        if (this.repositorioUI.countById(id) == 0) {
 
-			this.response.setMensagem("O nome não pode estar em branco");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+            this.response.setMensagem("Não há usuários com o id informado");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+        } else {
 
-		}else if (this.repositorioDI.existsById(d.getId())) {
-			
-			this.response.setMensagem("Dispositivo já cadastrado");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-			
-		}
+            Optional<User> obj = this.repositorioUI.findById(id);
 
-		else {
-			d.setUser(this.usuarioLogado);
-			this.usuarioLogado.getDispositivos().add(d);
-			return new ResponseEntity<>(this.repositorioDI.save(d), HttpStatus.CREATED);
+            User u = obj.get();
 
-		}
+            this.repositorioUI.delete(u);
 
-	}
+            this.response.setMensagem("Usuario removido com sucesso");
 
-	public ResponseEntity<?> listDevices() {
+            return new ResponseEntity<>(this.response.getMensagem(), HttpStatus.OK);
 
-		return new ResponseEntity<>(this.repositorioDI.findAll(), HttpStatus.OK);
+        }
 
-	}
+    }
 
-	public ResponseEntity<?> editDevice(Device d) {
+    public ResponseEntity<?> selectDeviceById(Long id) {
 
-		if (this.repositorioDI.countById(d.getId()) == 0) {
+        if (this.repositorioDI.countById(id) == 0) {
 
-			this.response.setMensagem("Não há dispositivos com o id informado");
-			return new ResponseEntity<>(this.response, HttpStatus.NOT_FOUND);
-		} else if (d.getNome().equals("")) {
+            this.response.setMensagem("Não há dispositivo com o id informado");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-			this.response.setMensagem("O nome não pode estar em branco");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+        } else {
+            Device d = this.repositorioDI.findById(id).orElse(null);
+            return new ResponseEntity<>(new DeviceDto(d.getNome(),d.getId(),d.getUser().getId()), HttpStatus.OK);
+        }
 
-		} else {
+    }
 
-			return new ResponseEntity<>(this.repositorioDI.save(d), HttpStatus.OK);
+    public ResponseEntity<?> registerDevice(DeviceDto dDto) {
 
-		}
+        if (dDto.nome().equals("")) {
 
-	}
+            this.response.setMensagem("O nome não pode estar em branco");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-	public ResponseEntity<?> deleteDevice(Long id) {
+        } else if (this.repositorioDI.existsById(dDto.id())) {
 
-		if (this.repositorioDI.countById(id) == 0) {
+            this.response.setMensagem("Dispositivo já cadastrado");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
-			this.response.setMensagem("Não há dispositivo com o id informado");
-			return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-		}
+        } else {
+            
+            Device d = new Device(dDto.id(),dDto.nome());
 
-		else {
+            d.setUser(this.usuarioLogado);
+            this.usuarioLogado.getDispositivos().add(d);
+            return new ResponseEntity<>(this.repositorioDI.save(d), HttpStatus.CREATED);
 
-			Optional<Device> obj = this.repositorioDI.findById(id);
+        }
 
-			Device d = new Device();
-			d = obj.orElse(null);
+    }
 
-			this.usuarioLogado.getDispositivos().remove(d);
-			this.repositorioDI.delete(d);
-			this.response.setMensagem("O dispositivo foi removido com sucesso");
-			return new ResponseEntity<>(this.response.getMensagem(), HttpStatus.OK);
+    public ResponseEntity<?> listDevices() {
 
-		}
+        return new ResponseEntity<>(this.repositorioDI.findAll().stream().map(x -> new DeviceDto(x.getNome(),x.getId(),x.getUser().getId())), HttpStatus.OK);
 
-	}
+    }
+
+    public ResponseEntity<?> editDevice(DeviceDto dDto) {
+
+        if (this.repositorioDI.countById(dDto.id()) == 0) {
+
+            this.response.setMensagem("Não há dispositivos com o id informado");
+            return new ResponseEntity<>(this.response, HttpStatus.NOT_FOUND);
+        } else if (dDto.nome().equals("")) {
+
+            this.response.setMensagem("O nome não pode estar em branco");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+
+        } else {
+
+            Device d = new Device(dDto.id(),dDto.nome());
+
+            User u = this.repositorioUI.findById(dDto.id()).orElse(null);
+            d.setUser(u);
+
+            return new ResponseEntity<>(this.repositorioDI.save(d), HttpStatus.OK);
+
+        }
+
+    }
+
+    public ResponseEntity<?> deleteDevice(Long id) {
+
+        if (this.repositorioDI.countById(id) == 0) {
+
+            this.response.setMensagem("Não há dispositivo com o id informado");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+        } else {
+
+            Optional<Device> obj = this.repositorioDI.findById(id);
+
+            Device d = obj.get();
+            
+            this.usuarioLogado.getDispositivos().remove(d);
+            this.repositorioDI.delete(d);
+            this.response.setMensagem("O dispositivo foi removido com sucesso");
+            return new ResponseEntity<>(this.response.getMensagem(), HttpStatus.OK);
+
+        }
+
+    }
 
 
 }

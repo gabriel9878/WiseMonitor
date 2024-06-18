@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 
 
-function FormCadastro({ botao,eventoTeclado,cadastrar,alterar,remover,obj}) {
+function FormCadastro({ eventoTeclado,cadastrar,alterar,remover,obj}) {
 
 
     
@@ -21,7 +21,7 @@ function FormCadastro({ botao,eventoTeclado,cadastrar,alterar,remover,obj}) {
                     
 
 
-            <Outlet/>
+         
         </form>
 
     )

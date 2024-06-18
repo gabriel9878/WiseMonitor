@@ -1,8 +1,6 @@
 package br.com.SmartFinder.modelos;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,8 +26,19 @@ public class Device {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
-    private User user = new User();
-    
+    private User user;
+
+	public Device(){
+
+
+	}
+
+	public Device(Long id, String nome) {
+		this.id = id;
+		this.nome = nome;
+		this.user = null;
+	}
+
 	public String getNome() {
 		return nome;
 	}

@@ -48,6 +48,22 @@ public class User {
 	    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	    private List<Device> dispositivos = new ArrayList<>();
 
+		public User(){
+			
+
+
+		}
+
+		
+		public User(Long id, String login, String senha, String cpf, String email) {
+			this.id = id;
+			this.login = login;
+			this.senha = senha;
+			this.cpf = cpf;
+			this.email = email;
+			this.dispositivos = null;
+		}
+
 		public Long getId() {
 			return id;
 		}

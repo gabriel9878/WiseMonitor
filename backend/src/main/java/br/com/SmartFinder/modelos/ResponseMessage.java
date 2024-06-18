@@ -8,6 +8,14 @@ public class ResponseMessage {
 	
 	private String mensagem;
 
+	
+	public ResponseMessage(){
+
+		this.mensagem = "";
+
+	}
+
+
 	public String getMensagem() {	
 		return mensagem;
 	}

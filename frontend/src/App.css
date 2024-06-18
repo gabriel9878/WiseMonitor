@@ -10,6 +10,13 @@ form{
   
 }
 
+table{
+
+  width: 500px;
+
+
+}
+
 header{
   text-align: center;
   text-shadow: 1px 1px rgba(0, 0, 0, 0.322);
@@ -30,15 +37,10 @@ button#primario{
   width: 90px;
   border-radius: 4px;
   box-shadow : 0.5px 0.5px rgba(0, 0, 0, 0.308);
-  
-}
-
-button#primario > *{
-
   color: white;
-  text-decoration: none;
-
 }
+
+
 
 button#secundario > *{
 
@@ -55,7 +57,7 @@ button#secundario{
   width: 90px;
   border-radius: 4px;
   box-shadow : 1.5px 1.5px  rgba(0, 0, 0, 0.308);
- 
+  
   
   
 }

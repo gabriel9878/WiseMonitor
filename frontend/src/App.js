@@ -17,15 +17,25 @@ function App() {
     id: 0,
     login: '',
     senha: '',
+    cpf: '',
     email: '',
-    cpf: ''
+    dispositivos: []
+
+  }
+
+  const device = {
+
+    id: 0,
+    nome: ''
 
   }
 
   //UseState
-  const [btnCadastrar, setBtnCadastrar] = useState(true);
-  const [users, setUsers] = useState([]);
+  const [btnEdicao, setBtnEdicao] = useState(true)
+  const [users, setUsers] = useState([])
   const [objUser, setObjUser] = useState(user)
+  const [devices, setDevices] = useState([])
+  const [objDevice, setObjDevice] = useState(device)
 
   //UseEffect
   useEffect(() => {
@@ -64,7 +74,7 @@ function App() {
 
           setUsers([...users, retornoJson])
           alert('Usuario cadastrado com sucesso')
-          atualizarFormulario()
+
         }
 
 
@@ -147,7 +157,7 @@ function App() {
 
           setUsers(usersTemp)
 
-          atualizarFormulario()
+
 
         }
 
@@ -191,39 +201,76 @@ function App() {
 
           setUsers(usersTemp)
 
-          atualizarFormulario()
+
 
         }
 
       })
   }
 
+  const exibirUsuarioAtivo = () => {
 
-  const atualizarFormulario = () => {
+    fetch('http://localhost:8080/exibicaoUsuarioAtivo',
 
-    setObjUser(user)
-    setBtnCadastrar(true)
+      {
+        method: 'get',
+        headers: {
+
+          'Content-type': 'application/json',
+          'Accept': 'application/json'
+
+        }
+
+
+      }).then(retorno => retorno.json())
+      .then(retornoJson => {
+
+        if (retornoJson.mensagem !== undefined) {
+
+          alert(retornoJson.mensagem)
+
+        }
+        else {
+
+          setObjUser(retornoJson)
+
+        }
+
+
+      })
+
 
   }
 
-  const selecionarUsers = (id) => {
+  const selecionaUser = (indice) => {
 
-    setObjUser(users[id])
-    setBtnCadastrar(false)
+    setObjUser(users[indice])
 
+  }
+
+  const selecionaDevice = (indice) => {
+
+    setObjDevice(devices[indice])
+    setBtnEdicao(false)
+  }
+
+  const removeSelecaoDevice = () => {
+
+    setObjDevice(null)
+    setBtnEdicao(true)
 
   }
 
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <FormLogin eventoTeclado={respostaTeclado} obj = {objUser} />,
+      element: <FormLogin eventoTeclado={respostaTeclado} obj={objUser} />,
 
     },
-    
+
     {
       path: "cadastrar",
-      element: <FormCadastro botao={setBtnCadastrar} eventoTeclado={respostaTeclado} cadastrar={cadastrar}
+      element: <FormCadastro eventoTeclado={respostaTeclado} cadastrar={cadastrar}
         alterar={alterar} exibir={exibir} remover={remover} obj={objUser} />
 
     },
@@ -231,7 +278,8 @@ function App() {
     {
 
       path: "home",
-      element: <Home/>
+      element: <Home usersList={users} removeSelecaoDevice={removeSelecaoDevice}
+        selecionaDevice={selecionaDevice} btnEdicao={btnEdicao} exibirUsuarioAtivo={exibirUsuarioAtivo} objUser={objUser} />
 
     }
 
