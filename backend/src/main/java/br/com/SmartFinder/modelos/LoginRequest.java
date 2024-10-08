@@ -1,9 +1,8 @@
 package br.com.SmartFinder.modelos;
 
-public record UserResponseDto(
+public record LoginRequest(
 
     String login,
-    String email
-
+    String senha
 
 ) {}

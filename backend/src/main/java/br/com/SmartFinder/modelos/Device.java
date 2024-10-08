@@ -17,15 +17,16 @@ public class Device {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)	
-    @Column(name = "id")
+    @Column()
     private Long id;
 	
     @Column(length = 200, nullable = false)
     private String nome;
 	
-    @ManyToOne
+    
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
+	@ManyToOne
     private User user;
 
 	public Device(){

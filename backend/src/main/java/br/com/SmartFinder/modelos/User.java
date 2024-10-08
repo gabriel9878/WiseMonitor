@@ -1,12 +1,7 @@
 package br.com.SmartFinder.modelos;
 
-import java.beans.JavaBean;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.management.MXBean;
-
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -18,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 
@@ -30,10 +26,10 @@ public class User {
 		
 	    @Column(name = "id")
 	    private Long id;
-		
+		@NotEmpty
 	    @Column(length = 200, nullable = false)
 	    private String login;
-		
+		@NotEmpty
 	    @Column(length = 300, nullable = false)
 	    private String senha;
 

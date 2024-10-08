@@ -1,12 +1,46 @@
 import { useEffect } from "react";
+import { Link, useNavigate } from 'react-router-dom';
 
-function Home({ usersList, objUser, exibirUsuarioAtivo, btnEdicao, selecionaDevice, removeSelecaoDevice }) {
+function Home({ usersList, limpaObjUDto, objUser, selecionaUsuarioAtivo, btnEdicao, selecionaDevice, removeSelecaoDevice }) {
 
+    const navigate = useNavigate()
     useEffect(() => {
 
-        exibirUsuarioAtivo()
+        selecionaUsuarioAtivo()
 
     }, [])
+
+    const logoff = (e) => {
+
+        e.preventDefault()
+
+        fetch("http://localhost:8080/logoff",
+
+            {
+
+                method: 'get',
+                headers: {
+
+                    'Content-type': 'application/json',
+                    'Accept': 'application/json'
+
+                }
+
+            }).then(retorno => retorno.json())
+            .then(retornoJson => {
+
+
+                alert(retornoJson.mensagem)
+                
+                navigate("/")
+                limpaObjUDto()
+
+
+            })
+
+
+
+    }
 
     return (
 
@@ -16,12 +50,12 @@ function Home({ usersList, objUser, exibirUsuarioAtivo, btnEdicao, selecionaDevi
 
                 <tr>
 
-                    <th>ID</th>
+                    <th id ="primeira">ID</th>
                     <th>Login</th>
                     <th>Email</th>
                     <th>CPF</th>
                     <th>Dispositivos</th>
-                    <th>Selecionar</th>
+                    <th id = "ultima">Selecionar</th>
 
 
                 </tr>
@@ -40,6 +74,8 @@ function Home({ usersList, objUser, exibirUsuarioAtivo, btnEdicao, selecionaDevi
                         <td>{objUser.email}</td>
                         <td>{objUser.cpf}</td>
                         <td>
+
+
                             <ul>
 
                                 {objUser.dispositivos.map((dispositivo, index) => (
@@ -53,26 +89,16 @@ function Home({ usersList, objUser, exibirUsuarioAtivo, btnEdicao, selecionaDevi
                                             ) :
 
                                             (
-                                            <div>
-                                            <button>Rastrear</button>
-                                            <button>Editar</button>
-                                            <button>Deletar</button>
-                                            <button onClick={() => removeSelecaoDevice()}>Cancelar</button>
-                                            </div>
+                                                <div>
+                                                    <button>Rastrear</button>
+                                                    <button>Editar</button>
+                                                    <button>Deletar</button>
+                                                    <button onClick={() => removeSelecaoDevice()}>Cancelar</button>
+                                                </div>
                                             )
                                         }
 
                                     </li>
-
-
-
-
-
-
-
-
-
-
 
                                 ))}
 
@@ -81,16 +107,11 @@ function Home({ usersList, objUser, exibirUsuarioAtivo, btnEdicao, selecionaDevi
 
                     </tr>
 
-
-
-
-
-
-
-
                 }
 
             </tbody>
+
+            <button id="secundario" onClick={logoff}>Sair</button>
 
         </table>
 

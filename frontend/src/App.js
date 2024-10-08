@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
+
 import './App.css';
+
 import FormCadastro from './FormCadastro';
 import FormLogin from './FormLogin';
 import Home from './Home';
+
 import { createBrowserRouter } from 'react-router-dom';
 import { RouterProvider } from 'react-router-dom';
 
@@ -23,16 +26,35 @@ function App() {
 
   }
 
+  const userDto = {
+
+    login: '',
+    senha: '',
+    cpf: '',
+    email: '',
+
+  }
+
+  const userRequest = {
+
+    login: '',
+    senha: ''
+
+  }
+
   const device = {
 
     id: 0,
-    nome: ''
+    nome: '',
+    user: user
 
   }
 
   //UseState
   const [btnEdicao, setBtnEdicao] = useState(true)
   const [users, setUsers] = useState([])
+  const [userDtos, setDtos] = useState([])
+  const [objUDto, setObjUDto] = useState(userDto)
   const [objUser, setObjUser] = useState(user)
   const [devices, setDevices] = useState([])
   const [objDevice, setObjDevice] = useState(device)
@@ -44,9 +66,47 @@ function App() {
 
   }, []);
 
+  const UserDtoParaUser = (userDto) => {
+    setObjUser({
+
+      ...user, // Mantém outros atributos se existirem
+      login: userDto.login,
+      senha: userDto.senha,
+      cpf: userDto.cpf,
+      email: userDto.email
+
+    });
+  };
+
   const respostaTeclado = (e) => {
 
-    setObjUser({ ...objUser, [e.target.name]: e.target.value })
+    setObjUDto({ ...objUDto, [e.target.name]: e.target.value })
+
+  }
+
+  const limpaObjUDto = () => {
+
+    setObjUDto(userDto)
+
+  }
+
+  const selecionaUser = (indice) => {
+
+    setObjUser(users[indice])
+
+  }
+
+  const selecionaDevice = (indice) => {
+
+    setObjDevice(devices[indice])
+    setBtnEdicao(false)
+
+  }
+
+  const removeSelecaoDevice = () => {
+
+    setObjDevice(null)
+    setBtnEdicao(true)
 
   }
 
@@ -55,7 +115,7 @@ function App() {
     fetch('http://localhost:8080/cadastroUsuario', {
 
       method: 'post',
-      body: JSON.stringify(objUser),
+      body: JSON.stringify(objUDto),
       headers: {
 
         'Content-type': 'application/json',
@@ -72,18 +132,19 @@ function App() {
 
         } else {
 
-          setUsers([...users, retornoJson])
-          alert('Usuario cadastrado com sucesso')
 
+          setUsers([...users, retornoJson])//Modificar para userResponseDto(Com devices) posteriormente
+          alert('Usuario cadastrado com sucesso')
+          limpaObjUDto()
         }
 
-
+        
 
       })
 
   }
 
-  const exibir = () => {
+  const selecionar = () => {
 
     fetch('http://localhost:8080/exibicaoUsuarios', {
 
@@ -107,8 +168,8 @@ function App() {
 
         else {
 
-          setUsers(retornoJson)
-
+          setUsers(retornoJson)//Modificar para userResponseDto(Com devices) posteriormente
+          limpaObjUDto()
         }
 
       })
@@ -122,7 +183,7 @@ function App() {
     fetch('http://localhost:8080/edicaoUsuario', {
 
       method: 'put',
-      body: JSON.stringify(objUser),
+      body: JSON.stringify(objUDto),
       headers: {
 
         'Content-type': 'application/json',
@@ -156,7 +217,7 @@ function App() {
           usersTemp[indice] = objUser
 
           setUsers(usersTemp)
-
+          limpaObjUDto()
 
 
         }
@@ -169,7 +230,7 @@ function App() {
 
   const remover = () => {
 
-    fetch('http://localhost:8080/exclusaoUsuario-{id}' + objUser.id, {
+    fetch('http://localhost:8080/exclusaoUsuario-{id}' + objUDto.id, {
 
       method: 'delete',
       headers: {
@@ -200,7 +261,7 @@ function App() {
           usersTemp.splice(indice, 1)
 
           setUsers(usersTemp)
-
+          limpaObjUDto()
 
 
         }
@@ -208,7 +269,7 @@ function App() {
       })
   }
 
-  const exibirUsuarioAtivo = () => {
+  const selecionaUsuarioAtivo = () => {
 
     fetch('http://localhost:8080/exibicaoUsuarioAtivo',
 
@@ -220,7 +281,6 @@ function App() {
           'Accept': 'application/json'
 
         }
-
 
       }).then(retorno => retorno.json())
       .then(retornoJson => {
@@ -242,36 +302,19 @@ function App() {
 
   }
 
-  const selecionaUser = (indice) => {
-
-    setObjUser(users[indice])
-
-  }
-
-  const selecionaDevice = (indice) => {
-
-    setObjDevice(devices[indice])
-    setBtnEdicao(false)
-  }
-
-  const removeSelecaoDevice = () => {
-
-    setObjDevice(null)
-    setBtnEdicao(true)
-
-  }
-
   const router = createBrowserRouter([
     {
+
       path: "/",
-      element: <FormLogin eventoTeclado={respostaTeclado} obj={objUser} />,
+      element: <FormLogin eventoTeclado={respostaTeclado} limpaObjUDto={limpaObjUDto} obj={objUDto} />,
 
     },
 
     {
+
       path: "cadastrar",
       element: <FormCadastro eventoTeclado={respostaTeclado} cadastrar={cadastrar}
-        alterar={alterar} exibir={exibir} remover={remover} obj={objUser} />
+        obj={objUDto} />
 
     },
 
@@ -279,7 +322,7 @@ function App() {
 
       path: "home",
       element: <Home usersList={users} removeSelecaoDevice={removeSelecaoDevice}
-        selecionaDevice={selecionaDevice} btnEdicao={btnEdicao} exibirUsuarioAtivo={exibirUsuarioAtivo} objUser={objUser} />
+        selecionaDevice={selecionaDevice} btnEdicao={btnEdicao} limpaObjUDto={limpaObjUDto} selecionaUsuarioAtivo={selecionaUsuarioAtivo} objUser={objUser} />
 
     }
 

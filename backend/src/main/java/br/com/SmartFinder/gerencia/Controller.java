@@ -1,8 +1,14 @@
 package br.com.SmartFinder.gerencia;
 
+import java.util.HashMap;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.SmartFinder.modelos.DeviceDto;
-import br.com.SmartFinder.modelos.UserDto;
+import br.com.SmartFinder.modelos.LoginRequest;
+import br.com.SmartFinder.modelos.UserRequestDto;
 import br.com.SmartFinder.servico.ServiceManager;
+import jakarta.validation.Valid;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -22,7 +30,6 @@ public class Controller {
 
 	
 	private final ServiceManager service;
-
 
 	public Controller(ServiceManager service) {
 		this.service = service;
@@ -36,10 +43,9 @@ public class Controller {
 	}
 	
 	@PostMapping("/login")
-	public ResponseEntity<?> initializeSession(@RequestBody UserDto u){
+	public ResponseEntity<?> initializeSession(@Valid @RequestBody LoginRequest u){
 		
 		return this.service.initializeSession(u);
-		
 		
 	}
 	
@@ -58,7 +64,7 @@ public class Controller {
 
 	}
 
-	@GetMapping("/exibicaoUsuario-{id}")
+	@GetMapping("/exibicaoUsuario/{id}")
 	public ResponseEntity<?> selectUserById(@PathVariable Long id) {
 
 		return this.service.selectUserById(id);
@@ -67,35 +73,35 @@ public class Controller {
 
 
 	@PostMapping("/cadastroUsuario")
-	public ResponseEntity<?> registerUser(@RequestBody UserDto u) {
+	public ResponseEntity<?> postUser(@Valid @RequestBody UserRequestDto u) {
 
 		return this.service.registerUser(u);
 
 	}
 
 	@GetMapping("/exibicaoUsuarios")
-	public ResponseEntity<?> listUsers() {
+	public ResponseEntity<?> getUsers() {
 
 		return this.service.listUsers();
 
 	}
 
 	@PutMapping("/edicaoUsuario")
-	public ResponseEntity<?> editUser(@RequestBody UserDto u) {
+	public ResponseEntity<?> putUser(@Valid @RequestBody UserRequestDto u) {
 
 		return this.service.editUser(u);
 
 	}
 
 
-	@DeleteMapping("/exclusaoUsuario-{id}")
-	public ResponseEntity<?> removeUser(@PathVariable Long id) {
+	@DeleteMapping("/exclusaoUsuario/{id}")
+	public ResponseEntity<?> deleteUser(@PathVariable Long id) {
 
-		return this.service.deleteUser(id);
+		return this.service.removeUser(id);
 
 	}
 	
-	@GetMapping("/exibicaoDispositivo-{id}")
+	@GetMapping("/exibicaoDispositivo/{id}")
 	public ResponseEntity<?> selectDeviceById(@PathVariable Long id) {
 
 		return this.service.selectDeviceById(id);
@@ -104,7 +110,7 @@ public class Controller {
 	
 	
 	@PostMapping("/cadastroDispositivo")
-	public ResponseEntity<?> registerDevice(@RequestBody DeviceDto d) {
+	public ResponseEntity<?> registerDevice(@Valid @RequestBody DeviceDto d) {
 
 		return this.service.registerDevice(d);
 
@@ -118,18 +124,37 @@ public class Controller {
 	}
 
 	@PutMapping("/edicaoDispositivo")
-	public ResponseEntity<?> editDevice(@RequestBody DeviceDto d) {
+	public ResponseEntity<?> editDevice(@Valid @RequestBody DeviceDto d) {
 			
 		return this.service.editDevice(d);
 
 	}
 
 	
-	@DeleteMapping("/exclusaoDispositivo-{id}")
+	@DeleteMapping("/exclusaoDispositivo/{id}")
 	public ResponseEntity<?> removeDevice(@PathVariable Long id) {
 
 		return this.service.deleteDevice(id);
 
 	}
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException exp) {
+
+        HashMap<String, String> erros = new HashMap<>();
+
+        exp.getBindingResult().getAllErrors().forEach(e -> {
+
+            var nome = ((FieldError) e).getField(); 
+            var mensagem = e.getDefaultMessage();
+            erros.put(nome, mensagem);
+
+        });
+
+        return new ResponseEntity<>(erros, HttpStatus.BAD_REQUEST);
+
+    }
+
+
 
 }

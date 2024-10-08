@@ -1,10 +1,12 @@
 package br.com.SmartFinder.modelos;
 
+import jakarta.validation.constraints.NotEmpty;
+
 public record DeviceDto(
 
-    String nome,
     Long id,
+    @NotEmpty
+    String nome,
     Long user_id
-
 
 ) {}

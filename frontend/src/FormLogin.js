@@ -1,12 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-function FormLogin({ obj, eventoTeclado }) {
+function FormLogin({ obj, eventoTeclado,limpaObjUDto }) {
 
     const navigate = useNavigate()
-    const [errorMessage, setErrorMessage] = useState('')
+    //const [errorMessage, setErrorMessage] = useState('')
 
-    const handleLogin =  (e) => {
+    const login = (e) => {
 
             e.preventDefault()
             
@@ -27,16 +27,19 @@ function FormLogin({ obj, eventoTeclado }) {
                 .then(retornoJson => {
 
                     if (retornoJson.mensagem !== undefined) {
-
+                        
+                        
                         alert(retornoJson.mensagem)
 
                     }
                     else{
 
+                        
                         navigate("home")
-
+                        limpaObjUDto()
                     }
-
+                    
+                    
 
                 })
        
@@ -55,12 +58,12 @@ function FormLogin({ obj, eventoTeclado }) {
                 </header>
 
             </div>
-            <input type='text' value={obj.login} onChange={eventoTeclado} name='login' placeholder="Login" className="form form-control " />
+            <input type='text' value={obj.login} onChange={eventoTeclado} name='login' placeholder="Login" className="form form-control" required />
 
-            <input type='password' value={obj.senha} onChange={eventoTeclado} name='senha' placeholder="Senha" className="form form-control" />
+            <input type='password' value={obj.senha} onChange={eventoTeclado} name='senha' placeholder="Senha" className="form form-control" required />
 
-            <button id="primario" onClick={handleLogin}>Entrar </button>
-            <button id="secundario"><Link to="/cadastrar">Cadastrar</Link> </button>
+            <button id="primario" onClick={login}>Entrar </button>
+            <button type = "button" id="secundario"><Link to="/cadastrar">Cadastrar</Link> </button>
 
 
 
