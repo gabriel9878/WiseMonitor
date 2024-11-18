@@ -14,11 +14,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import br.com.SmartFinder.dados.IDeviceRepository;
 import br.com.SmartFinder.dados.IUserRepository;
 import br.com.SmartFinder.modelos.Device;
-import br.com.SmartFinder.modelos.DeviceDto;
+import br.com.SmartFinder.modelos.DeviceRequestDto;
 import br.com.SmartFinder.modelos.LoginRequest;
 import br.com.SmartFinder.modelos.ResponseMessage;
 import br.com.SmartFinder.modelos.User;
 import br.com.SmartFinder.modelos.UserRequestDto;
+import jakarta.transaction.Transactional;
 
 @Service
 public class ServiceManager {
@@ -39,7 +40,10 @@ public class ServiceManager {
         this.repositorioDI = repositorioDI;
         this.repositorioUI = repositorioUI;
         this.response = response;
-        this.usuarioLogado = null;
+        //this.usuarioLogado = null;
+
+        //Usado para testagem, apagar antes de por em produção
+        this.usuarioLogado = this.repositorioUI.findByLogin("g").orElse(null);
 
     }
 
@@ -69,8 +73,8 @@ public class ServiceManager {
         }
 
         this.usuarioLogado = userRep;
-        
-        return new ResponseEntity<>(this.usuarioLogado,HttpStatus.ACCEPTED);
+
+        return new ResponseEntity<>(this.usuarioLogado, HttpStatus.ACCEPTED);
 
     }
 
@@ -78,7 +82,31 @@ public class ServiceManager {
 
         this.usuarioLogado = null;
         this.response.setMensagem("Sessão finalizada com sucesso");
-        return new ResponseEntity<>(this.response,HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(this.response, HttpStatus.ACCEPTED);
+
+    }
+
+    public ResponseEntity<?> saveLoggedUser(User u){
+
+        if(this.usuarioLogado == null){
+
+            this.response.setMensagem("Não há usuário logado no sistema");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+
+        }
+
+        if(!this.repositorioUI.existsById(u.getId())){
+
+            this.response.setMensagem("Usuario fornecido não possui o id compatível");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+
+        }
+
+        this.usuarioLogado = u;
+        this.usuarioLogado.setSenha(this.passwordEncoder.encode(u.getSenha()));
+        this.repositorioUI.save(this.usuarioLogado);
+        return new ResponseEntity<>(u,HttpStatus.OK);
+
 
     }
 
@@ -112,7 +140,7 @@ public class ServiceManager {
 
     public ResponseEntity<?> registerUser(UserRequestDto uDto) {
 
-        if (uDto.login().isEmpty() || uDto.senha().isEmpty() || uDto.cpf().isEmpty() || uDto.email().isEmpty() ) {
+        if (uDto.login().isEmpty() || uDto.senha().isEmpty() || uDto.cpf().isEmpty() || uDto.email().isEmpty()) {
             this.response.setMensagem("É necessário preencher todos os campos para efetuar o cadastro");
             return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
         }
@@ -127,7 +155,7 @@ public class ServiceManager {
         User u = userMapper.dtoToUser(uDto);
         u.setSenha(passwordEncoder.encode(u.getSenha()));
         this.repositorioUI.save(u);
-        
+        u = this.repositorioUI.findByLogin(u.getLogin()).orElse(null);
 
         return new ResponseEntity<>(u, HttpStatus.CREATED);
 
@@ -137,7 +165,6 @@ public class ServiceManager {
 
         //Mapeia e retorna uma lista dos usuarios do repositorio
         //return new ResponseEntity<>(this.repositorioUI.findAll().stream().map(u -> userMapper.userToDtoResponse(u)).collect(Collectors.toList()), HttpStatus.OK);
-        
         //método para testes e depuração, apagar em produção
         return new ResponseEntity<>(this.repositorioUI.findAll(), HttpStatus.OK);
     }
@@ -157,27 +184,41 @@ public class ServiceManager {
         u.setEmail(userDto.email());
 
         this.repositorioUI.save(u);
-       
 
+        u = this.repositorioUI.findByLogin(u.getLogin()).orElse(null);
         return new ResponseEntity<>(u, HttpStatus.OK);
 
     }
 
+    @Transactional
     public ResponseEntity<?> removeUser(Long id) {
 
         if (this.repositorioUI.countById(id) == 0) {
 
             this.response.setMensagem("Não há usuários com o id informado");
             return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+
         }
 
         Optional<User> obj = this.repositorioUI.findById(id);
 
         User u = obj.get();
 
+        u.getDispositivos().forEach(a -> {
+
+            this.repositorioDI.delete(a);
+
+        });
+
+        if (this.usuarioLogado != null && u.equals(this.usuarioLogado)) {
+
+            this.usuarioLogado = null;
+
+        }
+
         this.repositorioUI.delete(u);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(u, HttpStatus.OK);
 
     }
 
@@ -192,48 +233,54 @@ public class ServiceManager {
 
         Device d = this.repositorioDI.findById(id).orElse(null);
 
-        return new ResponseEntity<>(deviceMapper.deviceToDtoReponse(d), HttpStatus.OK);
+        return new ResponseEntity<>(deviceMapper.deviceToDeviceRequestDto(d), HttpStatus.OK);
 
     }
 
-    public ResponseEntity<?> registerDevice(DeviceDto dDto) {
+    @Transactional
+    public ResponseEntity<?> registerDevice(DeviceRequestDto dDto) {
 
         if (dDto.nome().equals("")) {
 
             this.response.setMensagem("O nome não pode estar em branco");
-            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
-
-        }
-
-        if (this.repositorioDI.existsById(dDto.id())) {
-
-            this.response.setMensagem("Dispositivo já cadastrado");
             return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
         }
 
         Device d = deviceMapper.dtoToDevice(dDto);
 
+        if (this.repositorioDI.existsByNome(dDto.nome())) {
+
+            this.response.setMensagem("Dispositivo já cadastrado");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+
+        }
+
         d.setUser(this.usuarioLogado);
-        this.usuarioLogado.getDispositivos().add(d);
+        d.setId(0L);
+        
+
+
         this.repositorioDI.save(d);
-        return new ResponseEntity<>(deviceMapper.deviceToDtoReponse(d), HttpStatus.CREATED);
+
+        d = this.repositorioDI.findByNome(d.getNome()).orElse(null);
+        this.usuarioLogado.getDispositivos().add(d);
+        this.repositorioUI.save(this.usuarioLogado);
+
+        System.out.println(d.getId());
+
+        return new ResponseEntity<>(d, HttpStatus.CREATED);
 
     }
 
     public ResponseEntity<?> listDevices() {
 
-        return new ResponseEntity<>(this.repositorioDI.findAll().stream().map(d -> deviceMapper.deviceToDtoReponse(d)), HttpStatus.OK);
+        //return new ResponseEntity<>(this.repositorioDI.findAll().stream().map(d -> deviceMapper.deviceToDtoReponse(d)), HttpStatus.OK);
+        return new ResponseEntity<>(this.repositorioDI.findAll(), HttpStatus.OK);
 
     }
 
-    public ResponseEntity<?> editDevice(DeviceDto dDto) {
-
-        if (this.repositorioDI.countById(dDto.id()) == 0) {
-
-            this.response.setMensagem("Não há dispositivos com o id informado");
-            return new ResponseEntity<>(this.response, HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> editDevice(DeviceRequestDto dDto) {
 
         if (dDto.nome().equals("")) {
 
@@ -241,17 +288,33 @@ public class ServiceManager {
             return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
 
         }
+        
+        if (this.repositorioDI.countByNome(dDto.nome()) == 0) {
 
-        Device d = new Device(dDto.id(), dDto.nome());
+            this.response.setMensagem("Não há dispositivos com o id informado");
+            return new ResponseEntity<>(this.response, HttpStatus.NOT_FOUND);
+        }
 
-        User u = this.repositorioUI.findById(dDto.id()).orElse(null);
-        d.setUser(u);
+        Device d = this.repositorioDI.findByNome(dDto.nome()).orElse(null);
 
-        return new ResponseEntity<>(this.repositorioDI.save(d), HttpStatus.OK);
+
+        if (this.repositorioDI.countByNome(dDto.nome()) != 0) {
+
+            this.response.setMensagem("Esse nome de dispositivo já está em uso");
+            return new ResponseEntity<>(this.response, HttpStatus.NOT_FOUND);
+
+        }
+
+        d.setNome(dDto.nome());
+
+        this.repositorioDI.save(d);
+
+        return new ResponseEntity<>(d, HttpStatus.OK);
 
     }
 
-    public ResponseEntity<?> deleteDevice(Long id) {
+    @Transactional
+    public ResponseEntity<?> removeDevice(Long id) {
 
         if (this.repositorioDI.countById(id) == 0) {
 
@@ -264,9 +327,32 @@ public class ServiceManager {
         Device d = obj.get();
 
         this.usuarioLogado.getDispositivos().remove(d);
+
+        d.setUser(null);
+
         this.repositorioDI.delete(d);
+
+        System.out.println(d.getId());
+
+        return new ResponseEntity<>(d, HttpStatus.OK);
+
+    }
+
+    public ResponseEntity<?> listUserDevices(Long id){
+
+        if (this.repositorioUI.countById(id) == 0) {
+
+            this.response.setMensagem("Não há usuários com o id informado");
+            return new ResponseEntity<>(this.response, HttpStatus.BAD_REQUEST);
+
+        }
+
+        Optional<User> obj = this.repositorioUI.findById(id);
+
+        User u = obj.get();
+
+        return new ResponseEntity<>(u.getDispositivos(),HttpStatus.OK);
         
-        return new ResponseEntity<>(this.response.getMensagem(), HttpStatus.OK);
 
     }
 

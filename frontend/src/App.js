@@ -42,22 +42,13 @@ function App() {
 
   }
 
-  const device = {
-
-    id: 0,
-    nome: '',
-    user: user
-
-  }
 
   //UseState
-  const [btnEdicao, setBtnEdicao] = useState(true)
   const [users, setUsers] = useState([])
-  const [userDtos, setDtos] = useState([])
-  const [objUDto, setObjUDto] = useState(userDto)
+  //const [userDtos, setDtos] = useState([])
   const [objUser, setObjUser] = useState(user)
-  const [devices, setDevices] = useState([])
-  const [objDevice, setObjDevice] = useState(device)
+  const [objUDto, setObjUDto] = useState(userDto)
+
 
   //UseEffect
   useEffect(() => {
@@ -66,7 +57,7 @@ function App() {
 
   }, []);
 
-  const UserDtoParaUser = (userDto) => {
+  /*const UserDtoParaUser = (userDto) => {
     setObjUser({
 
       ...user, // Mantém outros atributos se existirem
@@ -76,7 +67,7 @@ function App() {
       email: userDto.email
 
     });
-  };
+  };*/
 
   const respostaTeclado = (e) => {
 
@@ -84,11 +75,6 @@ function App() {
 
   }
 
-  const limpaObjUDto = () => {
-
-    setObjUDto(userDto)
-
-  }
 
   const selecionaUser = (indice) => {
 
@@ -96,21 +82,8 @@ function App() {
 
   }
 
-  const selecionaDevice = (indice) => {
 
-    setObjDevice(devices[indice])
-    setBtnEdicao(false)
-
-  }
-
-  const removeSelecaoDevice = () => {
-
-    setObjDevice(null)
-    setBtnEdicao(true)
-
-  }
-
-  const cadastrar = () => {
+  const cadastrarUsuario = () => {
 
     fetch('http://localhost:8080/cadastroUsuario', {
 
@@ -132,19 +105,19 @@ function App() {
 
         } else {
 
-
           setUsers([...users, retornoJson])//Modificar para userResponseDto(Com devices) posteriormente
           alert('Usuario cadastrado com sucesso')
-          limpaObjUDto()
+          setObjUDto(userDto)
+
         }
 
-        
+
 
       })
 
   }
 
-  const selecionar = () => {
+  const selecionarUsuarios = () => {
 
     fetch('http://localhost:8080/exibicaoUsuarios', {
 
@@ -169,16 +142,14 @@ function App() {
         else {
 
           setUsers(retornoJson)//Modificar para userResponseDto(Com devices) posteriormente
-          limpaObjUDto()
+
         }
 
       })
 
-
-
   }
 
-  const alterar = () => {
+  const alterarUsuario = () => {
 
     fetch('http://localhost:8080/edicaoUsuario', {
 
@@ -217,7 +188,7 @@ function App() {
           usersTemp[indice] = objUser
 
           setUsers(usersTemp)
-          limpaObjUDto()
+          setObjUDto(userDto)
 
 
         }
@@ -228,9 +199,9 @@ function App() {
 
   }
 
-  const remover = () => {
+  const removerUsuario = () => {
 
-    fetch('http://localhost:8080/exclusaoUsuario-{id}' + objUDto.id, {
+    fetch('http://localhost:8080/exclusaoUsuario/' + objUDto.id, {
 
       method: 'delete',
       headers: {
@@ -261,8 +232,6 @@ function App() {
           usersTemp.splice(indice, 1)
 
           setUsers(usersTemp)
-          limpaObjUDto()
-
 
         }
 
@@ -302,18 +271,53 @@ function App() {
 
   }
 
+const salvaUsuarioAtivo = () => {
+
+    fetch('http://localhost:8080/salvaUsuarioAtivo',
+
+      {
+
+        method: 'put',
+        body: JSON.stringify(objUser),
+        headers: {
+
+          'Content-type': 'application/json',
+          'Accept': 'application/json'
+
+        }
+
+      }).then(retorno => retorno.json())
+      .then(retornoJson => {
+
+        if (retornoJson.mensagem !== undefined) {
+
+          alert(retornoJson.mensagem)
+          return
+          
+        }
+        
+        setObjUser(retornoJson)
+        alert("ObjUser após ser salvo" + JSON.stringify(objUser))
+
+       })
+
+
+    }
+
+
+
   const router = createBrowserRouter([
     {
 
       path: "/",
-      element: <FormLogin eventoTeclado={respostaTeclado} limpaObjUDto={limpaObjUDto} obj={objUDto} />,
+      element: <FormLogin eventoTeclado={respostaTeclado} obj={objUDto} userDto={userDto} />,
 
     },
 
     {
 
       path: "cadastrar",
-      element: <FormCadastro eventoTeclado={respostaTeclado} cadastrar={cadastrar}
+      element: <FormCadastro eventoTeclado={respostaTeclado} cadastrarUsuario={cadastrarUsuario}
         obj={objUDto} />
 
     },
@@ -321,8 +325,9 @@ function App() {
     {
 
       path: "home",
-      element: <Home usersList={users} removeSelecaoDevice={removeSelecaoDevice}
-        selecionaDevice={selecionaDevice} btnEdicao={btnEdicao} limpaObjUDto={limpaObjUDto} selecionaUsuarioAtivo={selecionaUsuarioAtivo} objUser={objUser} />
+      element: <Home usersList={users} user={user} selecionaUsuarioAtivo={selecionaUsuarioAtivo}
+        salvaUsuarioAtivo={salvaUsuarioAtivo} alterarUsuario={alterarUsuario} objUser={objUser}
+        setObjUser={setObjUser} userDto={userDto} setObjUDto={setObjUDto} />
 
     }
 

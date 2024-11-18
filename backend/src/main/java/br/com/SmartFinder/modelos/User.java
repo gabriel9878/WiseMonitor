@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -41,7 +40,7 @@ public class User {
 	    private String email;
 	    
 		@JsonManagedReference
-	    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
 	    private List<Device> dispositivos = new ArrayList<>();
 
 		public User(){
@@ -110,6 +109,7 @@ public class User {
 		}
 
 
+		
 
 }
 

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-function FormLogin({ obj, eventoTeclado,limpaObjUDto }) {
+function FormLogin({ obj, eventoTeclado,userDto,limpaObjUDto }) {
 
     const navigate = useNavigate()
     //const [errorMessage, setErrorMessage] = useState('')
@@ -36,7 +36,7 @@ function FormLogin({ obj, eventoTeclado,limpaObjUDto }) {
 
                         
                         navigate("home")
-                        limpaObjUDto()
+                        setObjUDto(userDto)
                     }
                     
                     

@@ -17,8 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.SmartFinder.modelos.DeviceDto;
+import br.com.SmartFinder.modelos.DeviceRequestDto;
 import br.com.SmartFinder.modelos.LoginRequest;
+import br.com.SmartFinder.modelos.User;
 import br.com.SmartFinder.modelos.UserRequestDto;
 import br.com.SmartFinder.servico.ServiceManager;
 import jakarta.validation.Valid;
@@ -64,6 +65,13 @@ public class Controller {
 
 	}
 
+	@PutMapping("/salvaUsuarioAtivo")
+	public ResponseEntity<?> saveLoggedUser(@Valid @RequestBody User u){
+
+		return this.service.saveLoggedUser(u);
+
+	}
+
 	@GetMapping("/exibicaoUsuario/{id}")
 	public ResponseEntity<?> selectUserById(@PathVariable Long id) {
 
@@ -73,21 +81,21 @@ public class Controller {
 
 
 	@PostMapping("/cadastroUsuario")
-	public ResponseEntity<?> postUser(@Valid @RequestBody UserRequestDto u) {
+	public ResponseEntity<?> registerUser(@Valid @RequestBody UserRequestDto u) {
 
 		return this.service.registerUser(u);
 
 	}
 
 	@GetMapping("/exibicaoUsuarios")
-	public ResponseEntity<?> getUsers() {
+	public ResponseEntity<?> listUsers() {
 
 		return this.service.listUsers();
 
 	}
 
 	@PutMapping("/edicaoUsuario")
-	public ResponseEntity<?> putUser(@Valid @RequestBody UserRequestDto u) {
+	public ResponseEntity<?> editUser(@Valid @RequestBody UserRequestDto u) {
 
 		return this.service.editUser(u);
 
@@ -95,7 +103,7 @@ public class Controller {
 
 
 	@DeleteMapping("/exclusaoUsuario/{id}")
-	public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+	public ResponseEntity<?> removeUser(@PathVariable Long id) {
 
 		return this.service.removeUser(id);
 
@@ -110,7 +118,7 @@ public class Controller {
 	
 	
 	@PostMapping("/cadastroDispositivo")
-	public ResponseEntity<?> registerDevice(@Valid @RequestBody DeviceDto d) {
+	public ResponseEntity<?> registerDevice(@Valid @RequestBody DeviceRequestDto d) {
 
 		return this.service.registerDevice(d);
 
@@ -124,7 +132,7 @@ public class Controller {
 	}
 
 	@PutMapping("/edicaoDispositivo")
-	public ResponseEntity<?> editDevice(@Valid @RequestBody DeviceDto d) {
+	public ResponseEntity<?> editDevice(@Valid @RequestBody DeviceRequestDto d) {
 			
 		return this.service.editDevice(d);
 
@@ -134,7 +142,14 @@ public class Controller {
 	@DeleteMapping("/exclusaoDispositivo/{id}")
 	public ResponseEntity<?> removeDevice(@PathVariable Long id) {
 
-		return this.service.deleteDevice(id);
+		return this.service.removeDevice(id);
+
+	}
+
+	@GetMapping("/exibicaoDispositivosUsuario/{id}")
+	public ResponseEntity<?> listUserDevices(@PathVariable Long id){
+
+		return this.service.listUserDevices(id);
 
 	}
 

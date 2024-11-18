@@ -24,7 +24,7 @@ public class Device {
     private String nome;
 	
     
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user",nullable= true)
     @JsonBackReference
 	@ManyToOne
     private User user;

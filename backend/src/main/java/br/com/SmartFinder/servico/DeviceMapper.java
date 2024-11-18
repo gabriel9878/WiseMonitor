@@ -3,21 +3,21 @@ package br.com.SmartFinder.servico;
 import org.springframework.stereotype.Service;
 
 import br.com.SmartFinder.modelos.Device;
-import br.com.SmartFinder.modelos.DeviceDto;
-import br.com.SmartFinder.modelos.DeviceResponseDto;
+import br.com.SmartFinder.modelos.DeviceRequestDto;
+
 
 @Service
 public class DeviceMapper{
 
-    public Device dtoToDevice(DeviceDto dto){
+    public Device dtoToDevice(DeviceRequestDto dto){
 
-        return new Device(dto.id(),dto.nome());
+        return new Device(null,dto.nome());
 
     }
 
-    public DeviceResponseDto deviceToDtoReponse(Device d){
+    public DeviceRequestDto deviceToDeviceRequestDto(Device d){
 
-        return new DeviceResponseDto(d.getNome(),d.getUser().getId());
+        return new DeviceRequestDto(d.getNome());
 
     }
 
