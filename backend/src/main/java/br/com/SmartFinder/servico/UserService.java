@@ -35,8 +35,8 @@ public class UserService {
 	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 	public UserService(ResponseMessage response, UserMapper userMapper, DeviceMapper deviceMapper,
-			IDeviceRepository dIRepository, IUserRepository uIRepository, SessionService sessionService,
-			BCryptPasswordEncoder passwordEncoder) {
+			IDeviceRepository dIRepository, IUserRepository uIRepository, SessionService sessionService) {
+		
 		super();
 		this.response = response;
 		this.userMapper = userMapper;
@@ -44,7 +44,7 @@ public class UserService {
 		this.dIRepository = dIRepository;
 		this.uIRepository = uIRepository;
 		this.sessionService = sessionService;
-		this.passwordEncoder = passwordEncoder;
+		
 	}
 
 	public ResponseEntity<?> selectUserById(Long id) {

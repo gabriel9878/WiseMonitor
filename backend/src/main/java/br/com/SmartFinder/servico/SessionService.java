@@ -20,12 +20,12 @@ public class SessionService {
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private User usuarioLogado;
     
-	public SessionService(IUserRepository uIRepository, BCryptPasswordEncoder passwordEncoder, User usuarioLogado) {
+	public SessionService(IUserRepository uIRepository) {
 		
-		super();
+		
 		this.uIRepository = uIRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.setUsuarioLogado(usuarioLogado);
+		this.usuarioLogado = null;
+		
 	}
 	
 	public ResponseEntity<?> initializeSession(LoginRequest uDto) {
