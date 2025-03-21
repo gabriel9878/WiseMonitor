@@ -54,7 +54,7 @@ function Home({
     const removeSelecaoDevices = () => {
 
 
-        let tamBtns = objUser.dispositivos.length
+        let tamBtns = objUser.dispositivos?.length
         setObjDevice(device)
         alert("removeseleça" + JSON.stringify(tamBtns)) 
         //alert("Tamanho dispositivos removendoSeleção : " + tamBtns)
@@ -249,7 +249,7 @@ function Home({
         }
         setObjUser({...objUser,dispositivos:retornoJson})
         removeSelecaoDevices();
-        alert("dispostivios " + JSON.stringify(devices));
+        
 
       });
   }, [objUser,removeSelecaoDevices])
@@ -271,7 +271,7 @@ function Home({
 
     useEffect(() => {
 
-        if (objUser.dispositivos.length > 0) {
+        if (objUser.dispositivos?.length > 0) {
             const tempBtns = new Array(objUser.dispositivos.length).fill(true);
             setBtnsSelecao(tempBtns);
         }

@@ -17,5 +17,5 @@ public interface IUserRepository extends JpaRepository<User,Long>{
 	
 	boolean existsByCpf(String cpf);
 	
-	
+
 }

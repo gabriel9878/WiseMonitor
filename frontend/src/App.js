@@ -297,7 +297,7 @@ const salvaUsuarioAtivo = () => {
         }
         
         setObjUser(retornoJson)
-        alert("ObjUser após ser salvo" + JSON.stringify(objUser))
+        alert("ObjUser após ser salvo" + JSON.stringify(retornoJson))
 
        })
 
@@ -310,7 +310,7 @@ const salvaUsuarioAtivo = () => {
     {
 
       path: "/",
-      element: <FormLogin eventoTeclado={respostaTeclado} obj={objUDto} userDto={userDto} />,
+      element: <FormLogin eventoTeclado={respostaTeclado} setObjUDto={setObjUDto} obj={objUDto} userDto={userDto} />,
 
     },
 

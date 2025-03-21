@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-function FormLogin({ obj, eventoTeclado,userDto,limpaObjUDto }) {
+function FormLogin({ obj, eventoTeclado,setObjUDto,userDto,limpaObjUDto }) {
 
     const navigate = useNavigate()
     //const [errorMessage, setErrorMessage] = useState('')

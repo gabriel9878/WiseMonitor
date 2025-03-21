@@ -24,7 +24,7 @@ import br.com.SmartFinder.modelos.LoginRequest;
 public class ServiceManagerTest {
     
     @InjectMocks
-    private ServiceManager service;
+    private UserService service;
     @Mock
     private UserMapper userMapper;
     //@Mock

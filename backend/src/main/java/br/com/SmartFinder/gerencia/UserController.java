@@ -21,55 +21,19 @@ import br.com.SmartFinder.modelos.DeviceRequestDto;
 import br.com.SmartFinder.modelos.LoginRequest;
 import br.com.SmartFinder.modelos.User;
 import br.com.SmartFinder.modelos.UserRequestDto;
-import br.com.SmartFinder.servico.ServiceManager;
+import br.com.SmartFinder.servico.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/")
-public class Controller {
 
+public class UserController {
 	
-	private final ServiceManager service;
+	private final UserService service;
 
-	public Controller(ServiceManager service) {
+	public UserController(UserService service) {
 		this.service = service;
-	}
-
-	@GetMapping("/")
-	public String loadInitialPage() {
-
-		return "";
-
-	}
-	
-	@PostMapping("/login")
-	public ResponseEntity<?> initializeSession(@Valid @RequestBody LoginRequest u){
-		
-		return this.service.initializeSession(u);
-		
-	}
-	
-	@GetMapping("/logoff")
-	public ResponseEntity<?> finalizeSession(){
-		
-		return this.service.finalizeSession();
-		
-		
-	}
-
-	@GetMapping("/exibicaoUsuarioAtivo")
-	public ResponseEntity<?> selectLoggedUser() {
-
-		return this.service.selectLoggedUser();
-
-	}
-
-	@PutMapping("/salvaUsuarioAtivo")
-	public ResponseEntity<?> saveLoggedUser(@Valid @RequestBody User u){
-
-		return this.service.saveLoggedUser(u);
-
 	}
 
 	@GetMapping("/exibicaoUsuario/{id}")
@@ -109,43 +73,6 @@ public class Controller {
 
 	}
 	
-	@GetMapping("/exibicaoDispositivo/{id}")
-	public ResponseEntity<?> selectDeviceById(@PathVariable Long id) {
-
-		return this.service.selectDeviceById(id);
-
-	}
-	
-	
-	@PostMapping("/cadastroDispositivo")
-	public ResponseEntity<?> registerDevice(@Valid @RequestBody DeviceRequestDto d) {
-
-		return this.service.registerDevice(d);
-
-	}
-
-	@GetMapping("/exibicaoDispositivos")
-	public ResponseEntity<?> listDevices() {
-
-		return this.service.listDevices();
-
-	}
-
-	@PutMapping("/edicaoDispositivo")
-	public ResponseEntity<?> editDevice(@Valid @RequestBody DeviceRequestDto d) {
-			
-		return this.service.editDevice(d);
-
-	}
-
-	
-	@DeleteMapping("/exclusaoDispositivo/{id}")
-	public ResponseEntity<?> removeDevice(@PathVariable Long id) {
-
-		return this.service.removeDevice(id);
-
-	}
-
 	@GetMapping("/exibicaoDispositivosUsuario/{id}")
 	public ResponseEntity<?> listUserDevices(@PathVariable Long id){
 
