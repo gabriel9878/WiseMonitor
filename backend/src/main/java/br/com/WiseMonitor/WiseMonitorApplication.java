@@ -1,14 +1,14 @@
-package br.com.SmartFinder;
+package br.com.WiseMonitor;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SmartFinderApplication {
+public class WiseMonitorApplication {
 
 	public static void main(String[] args) {
 
-		SpringApplication.run(SmartFinderApplication.class, args);
+		SpringApplication.run(WiseMonitorApplication.class, args);
 		
 	}
 

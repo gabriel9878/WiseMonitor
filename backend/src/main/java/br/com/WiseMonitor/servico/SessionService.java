@@ -1,33 +1,65 @@
-package br.com.SmartFinder.servico;
+ package br.com.WiseMonitor.servico;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.stereotype.Service;
 
-import br.com.SmartFinder.dados.IDeviceRepository;
-import br.com.SmartFinder.dados.IUserRepository;
-import br.com.SmartFinder.modelos.LoginRequest;
-import br.com.SmartFinder.modelos.User;
+
+import br.com.WiseMonitor.modelos.LoginRequest;
+import br.com.WiseMonitor.modelos.User;
 
 @Service
-public class SessionService {
+public class SessionService{
 	
-	private IUserRepository uIRepository;
-	private IDeviceRepository dIRepository;
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private User usuarioLogado;
-    
-	public SessionService(IUserRepository uIRepository) {
+    private AuthenticationManager authenticationManager;
+    private UserService userService;
+    private UserDetailsService userDetailsService;
+    private TokenService tokenService;
+
+	public SessionService(@Lazy AuthenticationManager authenticationManager,UserDetailsService userDetailsService,
+			TokenService tokenService) {
 		
 		
-		this.uIRepository = uIRepository;
-		this.usuarioLogado = null;
+		this.userDetailsService =  userDetailsService;
+		this.authenticationManager = authenticationManager;
+		this.tokenService = tokenService;
 		
 	}
-	
+
+	public ResponseEntity<?> initializeSession(LoginRequest request){
+		
+		/*
+        if (uDto.login().isEmpty() || uDto.login() == null || uDto.senha().isEmpty()) {
+        	
+            
+            return new ResponseEntity<>("É necessário preencher todos os campos para efetuar login", HttpStatus.BAD_REQUEST);
+            
+        }*/
+		
+		//Transforma loginRequest em token de autenticação UsernamePassword
+		var tokenUsernamePassword = new UsernamePasswordAuthenticationToken(request.login(),request.senha());
+		
+		//Realiza autenticação com o token passado como parametro e retorna o objeto autenticado.
+		var auth= this.authenticationManager.authenticate(tokenUsernamePassword);
+		
+		//Gera token com base nos dados do usuario autorizado
+		var token = tokenService.generateToken((User)auth.getPrincipal());
+		
+		return new ResponseEntity<>(token,HttpStatus.OK);
+		
+	}
+
+	/*
 	public ResponseEntity<?> initializeSession(LoginRequest uDto) {
 
         if (uDto.login().isEmpty() || uDto.senha().isEmpty()) {
@@ -114,17 +146,11 @@ public class SessionService {
 
         return new ResponseEntity<>("Não há usuário logado no sistema", HttpStatus.BAD_REQUEST);
 
-    }
+    }*/
 
-	public  User getUsuarioLogado() {
-		return usuarioLogado;
-	}
 
-	public  void setUsuarioLogado(User usuarioLogado) {
-		this.usuarioLogado = usuarioLogado;
-		
-	}
-    
-    
+	
+
+
 
 }

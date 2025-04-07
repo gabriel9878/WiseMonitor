@@ -1,11 +1,11 @@
-package br.com.SmartFinder.dados;
+package br.com.WiseMonitor.dados;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import br.com.SmartFinder.modelos.Device;
-import br.com.SmartFinder.modelos.User;
+import br.com.WiseMonitor.modelos.Device;
+import br.com.WiseMonitor.modelos.User;
 
 public interface IDeviceRepository extends JpaRepository<Device,Long>{
 

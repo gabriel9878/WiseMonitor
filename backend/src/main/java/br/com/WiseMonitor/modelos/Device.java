@@ -1,4 +1,4 @@
-package br.com.SmartFinder.modelos;
+package br.com.WiseMonitor.modelos;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -23,7 +23,6 @@ public class Device {
     @Column(length = 200, nullable = false)
     private String nome;
 	
-    
     @JoinColumn(name = "user",nullable= true)
     @JsonBackReference
 	@ManyToOne
@@ -62,11 +61,6 @@ public class Device {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	
-	
-	
-	
+	}	
 	
 }

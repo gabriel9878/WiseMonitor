@@ -1,4 +1,4 @@
-package br.com.SmartFinder.modelos;
+package br.com.WiseMonitor.modelos;
 
 public record DeviceRequestDto(
 

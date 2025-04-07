@@ -1,4 +1,4 @@
-package br.com.SmartFinder.gerencia;
+package br.com.WiseMonitor.gerencia;
 
 import java.util.HashMap;
 
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.SmartFinder.modelos.DeviceRequestDto;
-import br.com.SmartFinder.modelos.LoginRequest;
-import br.com.SmartFinder.modelos.User;
-import br.com.SmartFinder.modelos.UserRequestDto;
-import br.com.SmartFinder.servico.UserService;
+import br.com.WiseMonitor.modelos.DeviceRequestDto;
+import br.com.WiseMonitor.modelos.LoginRequest;
+import br.com.WiseMonitor.modelos.User;
+import br.com.WiseMonitor.modelos.UserDto;
+import br.com.WiseMonitor.servico.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -37,29 +37,29 @@ public class UserController {
 	}
 
 	@GetMapping("/exibicaoUsuario/{id}")
-	public ResponseEntity<?> selectUserById(@PathVariable Long id) {
+	public ResponseEntity<?> findUserById(@PathVariable Long id) {
 
-		return this.service.selectUserById(id);
+		return this.service.findUserById(id);
 
 	}
 
 
 	@PostMapping("/cadastroUsuario")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody UserRequestDto u) {
+	public ResponseEntity<?> registerUser(@Valid @RequestBody UserDto u) {
 
 		return this.service.registerUser(u);
 
 	}
 
 	@GetMapping("/exibicaoUsuarios")
-	public ResponseEntity<?> listUsers() {
+	public ResponseEntity<?> findUsers() {
 
-		return this.service.listUsers();
+		return this.service.findUsers();
 
 	}
 
 	@PutMapping("/edicaoUsuario")
-	public ResponseEntity<?> editUser(@Valid @RequestBody UserRequestDto u) {
+	public ResponseEntity<?> editUser(@Valid @RequestBody UserDto u) {
 
 		return this.service.editUser(u);
 

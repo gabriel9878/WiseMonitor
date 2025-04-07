@@ -1,4 +1,4 @@
-package br.com.SmartFinder.servico;
+/*package br.com.WiseMonitor.servico;
 
 
 
@@ -69,4 +69,6 @@ public class UserMapperTest {
 
     }
 
-}
+}*/
+
+

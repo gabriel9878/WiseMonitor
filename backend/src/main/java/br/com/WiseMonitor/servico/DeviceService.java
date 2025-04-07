@@ -1,4 +1,4 @@
-package br.com.SmartFinder.servico;
+package br.com.WiseMonitor.servico;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -9,13 +9,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import br.com.SmartFinder.dados.IDeviceRepository;
-import br.com.SmartFinder.modelos.Device;
+import br.com.WiseMonitor.dados.IDeviceRepository;
+import br.com.WiseMonitor.modelos.Device;
 
 @Service
 public class DeviceService {
 
 	private IDeviceRepository iDRepository;
+	private DeviceMapper deviceMapper;
 	
 	public DeviceService(IDeviceRepository iDRepository) {
 		
@@ -43,7 +44,7 @@ public class DeviceService {
 	
 	public ResponseEntity<?> listDevices(){
 		
-		return new ResponseEntity<>(iDRepository.findAll(),HttpStatus.OK);
+		return new ResponseEntity<>(this.iDRepository.findAll(),HttpStatus.OK);
 		
 	}
 	

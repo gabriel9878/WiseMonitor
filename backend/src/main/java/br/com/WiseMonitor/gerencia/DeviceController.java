@@ -1,4 +1,4 @@
-package br.com.SmartFinder.gerencia;
+package br.com.WiseMonitor.gerencia;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.SmartFinder.modelos.Device;
-import br.com.SmartFinder.servico.DeviceService;
+import br.com.WiseMonitor.modelos.Device;
+import br.com.WiseMonitor.servico.DeviceService;
 import jakarta.validation.Valid;
 
 

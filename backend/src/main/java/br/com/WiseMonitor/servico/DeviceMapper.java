@@ -1,9 +1,9 @@
-package br.com.SmartFinder.servico;
+package br.com.WiseMonitor.servico;
 
 import org.springframework.stereotype.Service;
 
-import br.com.SmartFinder.modelos.Device;
-import br.com.SmartFinder.modelos.DeviceRequestDto;
+import br.com.WiseMonitor.modelos.Device;
+import br.com.WiseMonitor.modelos.DeviceRequestDto;
 
 
 @Service
