@@ -36,15 +36,12 @@ import jakarta.transaction.Transactional;
 @Service
 public class UserService {
 
-	private ResponseMessage response;
 	private UserMapper userMapper;
 	IUserRepository uIRepository;
 	private BCryptPasswordEncoder passwordEncoder;
 
-	public UserService(ResponseMessage response, UserMapper userMapper, DeviceMapper deviceMapper,
-			BCryptPasswordEncoder passwordEncoder, IUserRepository uIRepository) {
+	public UserService(UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, IUserRepository uIRepository) {
 
-		this.response = response;
 		this.userMapper = userMapper;
 		this.uIRepository = uIRepository;
 		this.passwordEncoder = passwordEncoder;
@@ -54,7 +51,6 @@ public class UserService {
 
 		User searchedUser = this.uIRepository.findByLogin(login).orElse(null);
 
-		
 		if (searchedUser != null) {
 
 			User loggedUser = new User();
@@ -67,7 +63,7 @@ public class UserService {
 
 			}
 
-			if (loggedUser.getRole() == UserRole.ADMIN	|| loggedUser.equals(searchedUser)) {
+			if (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(searchedUser)) {
 
 				UserResponseDto uDto = this.userMapper.userToUserResponseDto(searchedUser);
 				return new ResponseEntity<>(uDto, HttpStatus.FOUND);
@@ -97,7 +93,7 @@ public class UserService {
 				loggedUser = (User) authentication.getPrincipal();
 
 			}
-			
+
 			if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN || (searchedUser.equals(loggedUser))) {
 
 				UserResponseDto uDto = this.userMapper.userToUserResponseDto(searchedUser);
@@ -135,13 +131,13 @@ public class UserService {
 			User loggedUser = new User();
 
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			
+
 			if (authentication != null && authentication.isAuthenticated()) {
 
 				loggedUser = (User) authentication.getPrincipal();
 
 			}
-			
+
 			if (loggedUser.getRole() == UserRole.ADMIN) {
 
 				tempUser = this.userMapper.dtoToUser(uDto);
@@ -153,11 +149,11 @@ public class UserService {
 				return new ResponseEntity<>(uResponseDto, HttpStatus.CREATED);
 
 			}
-			
 
 			tempUser = this.userMapper.dtoToUser(uDto);
 			tempUser.setRole(UserRole.USER);
-
+			tempUser.setSenha(this.passwordEncoder.encode(tempUser.getSenha()));
+			
 			this.uIRepository.save(tempUser);
 
 			UserResponseDto uResponseDto = this.userMapper.userToUserResponseDto(tempUser);
@@ -258,85 +254,87 @@ public class UserService {
 
 		User removedUser = this.uIRepository.findById(id).orElse(null);
 
-		if(removedUser != null) {
-		
+		if (removedUser != null) {
+
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 			User loggedUser = new User();
-			
-			if(authentication != null && authentication.isAuthenticated()) {
-				
+
+			if (authentication != null && authentication.isAuthenticated()) {
+
 				loggedUser = (User) authentication.getPrincipal();
-				
+
 			}
-			
-			if(loggedUser.getRole() == UserRole.ADMIN || (loggedUser.equals(removedUser))) {
-				
+
+			if (loggedUser.getRole() == UserRole.ADMIN || (loggedUser.equals(removedUser))) {
+
 				this.uIRepository.delete(removedUser);
 				UserResponseDto uResponseDto = this.userMapper.userToUserResponseDto(removedUser);
-				return new ResponseEntity<>(uResponseDto,HttpStatus.OK);
-				
+				return new ResponseEntity<>(uResponseDto, HttpStatus.OK);
+
 			}
-			
-			return new ResponseEntity<>("Você não possui autorização para remover esse usuário",HttpStatus.FORBIDDEN);
-			
+
+			return new ResponseEntity<>("Você não possui autorização para remover esse usuário", HttpStatus.FORBIDDEN);
+
 		}
-		
-		return new ResponseEntity<>("Não há usuário cadastrado com o id fornecido",HttpStatus.NOT_FOUND);
+
+		return new ResponseEntity<>("Não há usuário cadastrado com o id fornecido", HttpStatus.NOT_FOUND);
 
 	}
-	
+
 	public ResponseEntity<?> listUserDevices(Long id) {
-		
+
 		User searchedUser = this.uIRepository.findById(id).orElse(null);
-		
-		if(searchedUser != null) {
-			
+
+		if (searchedUser != null) {
+
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			User loggedUser = new User();
-			
-			if(authentication != null && authentication.isAuthenticated()) {
-				
+
+			if (authentication != null && authentication.isAuthenticated()) {
+
 				loggedUser = (User) authentication.getPrincipal();
-				
+
 			}
-			
-			if(loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(searchedUser)) {
-				
-				List<String> devicesNames = searchedUser.getDispositivos().stream().map(d -> d.getNome()).collect(Collectors.toList());
-				
-				return new ResponseEntity<>(devicesNames,HttpStatus.OK);
+
+			if (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(searchedUser)) {
+
+				List<String> devicesNames = searchedUser.getDispositivos().stream().map(d -> d.getNome())
+						.collect(Collectors.toList());
+
+				return new ResponseEntity<>(devicesNames, HttpStatus.OK);
 			}
-			
-			return new ResponseEntity<>("Você não possui permissão para visualizar os dispositivos desse usuário",HttpStatus.FORBIDDEN);
-			
+
+			return new ResponseEntity<>("Você não possui permissão para visualizar os dispositivos desse usuário",
+					HttpStatus.FORBIDDEN);
+
 		}
-		
-		return new ResponseEntity<>("Não há usuário cadastrado com o id fornecido",HttpStatus.NOT_FOUND);
-		
+
+		return new ResponseEntity<>("Não há usuário cadastrado com o id fornecido", HttpStatus.NOT_FOUND);
+
 	}
-	
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException exp) {
-		
+
 		HashMap<String, String> erros = new HashMap<>();
-		
+
 		exp.getBindingResult().getAllErrors().forEach(e -> {
-			
+
 			String nome = ((FieldError) e).getField();
 			String mensagem = e.getDefaultMessage();
 			erros.put(nome, mensagem);
-			
+
 		});
-		
+
 		return new ResponseEntity<>(erros, HttpStatus.BAD_REQUEST);
-		
+
 	}
-	
+
 	public IUserRepository getUIRepository() {
-		
+
 		return this.uIRepository;
-		
+
 	}
 
 	/*
@@ -455,6 +453,5 @@ public class UserService {
 	 * 
 	 * }
 	 */
-
 
 }
