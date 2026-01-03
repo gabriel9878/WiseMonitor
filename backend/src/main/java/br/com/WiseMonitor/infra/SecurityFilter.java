@@ -24,7 +24,6 @@ public class SecurityFilter extends OncePerRequestFilter {
 	private TokenService tokenService;
 	private UserService userService;
 	
-	
 	public SecurityFilter(TokenService tokenService,@Lazy UserService userService) {
 		
 		

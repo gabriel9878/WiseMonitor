@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-wisemonitor
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 943349
+      MYSQL_DATABASE: wisemonitordb
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: wisemonitor-backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/wisemonitordb?serverTimezone=America/Sao_Paulo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 943349
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: wisemonitor-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    command: ["npm", "start"]
+    volumes:
+      - ./frontend:/app
+
+volumes:
+  db_data:

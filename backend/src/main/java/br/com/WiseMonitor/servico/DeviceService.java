@@ -35,10 +35,7 @@ public class DeviceService {
 			
 		}
 		
-		
-		
 		return new ResponseEntity<>("Não existe dispositivo com o id indicado",HttpStatus.BAD_REQUEST);
-		
 		
 	}
 	

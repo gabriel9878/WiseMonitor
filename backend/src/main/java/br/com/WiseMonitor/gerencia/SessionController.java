@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
 public class SessionController {
 	
-	
 	private SessionService sessionService;
 	
 	public SessionController(SessionService sessionService) {

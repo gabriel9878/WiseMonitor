@@ -58,7 +58,6 @@ public class User implements UserDetails{
 	    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER,cascade = {CascadeType.REMOVE,CascadeType.MERGE,CascadeType.PERSIST})
 	    private List<Device> dispositivos = new ArrayList<>();
 		
-		
 		public User() {
 			
 		}

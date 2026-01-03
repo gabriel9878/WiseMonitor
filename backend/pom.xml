@@ -16,7 +16,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com</groupId>
-	<artifactId>SmartFinder</artifactId>
+	<artifactId>WiseMonitor</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Wise Monitor</name>
 	<description>Aplicação web de monitoramento de dispositivos com Spring </description>
