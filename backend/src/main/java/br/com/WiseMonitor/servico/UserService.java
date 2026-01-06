@@ -42,7 +42,8 @@ public class UserService {
 	private SessionService sessionService;
 	private BCryptPasswordEncoder passwordEncoder;
 
-	public UserService(UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, IUserRepository uIRepository) {
+	public UserService(UserMapper userMapper, BCryptPasswordEncoder passwordEncoder,
+		SessionService sessionService, IUserRepository uIRepository) {
 
 		this.userMapper = userMapper;
 		this.uIRepository = uIRepository;
@@ -56,28 +57,12 @@ public class UserService {
 
 		if (searchedUser != null) {
 
-			User loggedUser = null;
+			// Usa SessionService: sempre retorna o login (String)
+			String login = (String) this.sessionService.getLoggedUser().getBody();
+			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
-			// autenticação recebe autenticação do armazenador de contexto de segurança
-			
-				Object principal = sessionService.getLoggedUser().getBody();
-				
-				//Esses dois ifs podem ser modularizados futuramente
-				//assim como nos métodos abaixo
-				if (principal instanceof String login) {
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				}
-				
-				else if(principal instanceof UserDetails) {
-
-					UserDetails userDetails = (UserDetails) principal;
-					String login = userDetails.getUsername();
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				
-				}
-			
-
-			if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN || (searchedUser.equals(loggedUser))) {
+			if (loggedUser != null &&
+					(loggedUser.getRole() == UserRole.ADMIN || searchedUser.equals(loggedUser))) {
 
 				UserResponseDto uDto = this.userMapper.userToUserResponseDto(searchedUser);
 
@@ -99,29 +84,12 @@ public class UserService {
 
 		if (searchedUser != null) {
 
-			User loggedUser = null;
+			// Usa SessionService: sempre retorna o login (String)
+			String login = (String) this.sessionService.getLoggedUser().getBody();
+			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
-			// autenticação recebe autenticação do armazenador de contexto de segurança
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-			if (authentication != null && authentication.isAuthenticated()) {
-				
-				Object principal = authentication.getPrincipal();
-				// Em muitos cenários o principal é apenas o login (String)
-				if (principal instanceof String login) {
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				}
-				// Se em algum fluxo for UserDetails, também tratamos
-				else if (principal instanceof UserDetails) {
-
-					UserDetails userDetails = (UserDetails) principal;
-					String login = userDetails.getUsername();
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				
-				}
-			}
-
-			if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN || (searchedUser.equals(loggedUser))) {
+			if (loggedUser != null &&
+					(loggedUser.getRole() == UserRole.ADMIN || searchedUser.equals(loggedUser))) {
 
 				UserResponseDto uDto = this.userMapper.userToUserResponseDto(searchedUser);
 
@@ -245,28 +213,11 @@ public class UserService {
 	 */
 
 	public ResponseEntity<?> findUsers() {
+		// Usa SessionService: sempre retorna o login (String)
+		String login = (String) this.sessionService.getLoggedUser().getBody();
+		User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
-		User loggedUser = null;
-
-			// autenticação recebe autenticação do armazenador de contexto de segurança
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-				
-				Object principal = authentication.getPrincipal();
-				// Em muitos cenários o principal é apenas o login (String)
-				if (principal instanceof String login) {
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				}
-				// Se em algum fluxo for UserDetails, também tratamos
-				else if (principal instanceof UserDetails) {
-
-					UserDetails userDetails = (UserDetails) principal;
-					String login = userDetails.getUsername();
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				
-				}
-			
-
-		if (loggedUser.getRole() == UserRole.ADMIN) {
+		if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN) {
 
 			// Mapeia lista dos usuarios do repositorio
 			List<UserResponseDto> usersDtosList = this.uIRepository.findAll().stream()
@@ -292,29 +243,11 @@ public class UserService {
 
 		if (editedUser != null) {
 
-		User loggedUser = null;
+			// Usa SessionService: sempre retorna o login (String)
+			String login = (String) this.sessionService.getLoggedUser().getBody();
+			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
-			// autenticação recebe autenticação do armazenador de contexto de segurança
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-			if (authentication != null && authentication.isAuthenticated()) {
-				
-				Object principal = authentication.getPrincipal();
-				// Em muitos cenários o principal é apenas o login (String)
-				if (principal instanceof String login) {
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				}
-				// Se em algum fluxo for UserDetails, também tratamos
-				else if (principal instanceof UserDetails) {
-
-					UserDetails userDetails = (UserDetails) principal;
-					String login = userDetails.getUsername();
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				
-				}
-			}
-
-			if (loggedUser.getRole() != null && loggedUser.getRole() == UserRole.ADMIN) {
+			if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN) {
 
 				editedUser = this.userMapper.dtoToUser(userDto);
 				editedUser.setSenha(this.passwordEncoder.encode(editedUser.getSenha()));
@@ -349,29 +282,11 @@ public class UserService {
 
 		if (removedUser != null) {
 
-			User loggedUser = null;
+			// Usa SessionService: sempre retorna o login (String)
+			String login = (String) this.sessionService.getLoggedUser().getBody();
+			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
-			// autenticação recebe autenticação do armazenador de contexto de segurança
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-			if (authentication != null && authentication.isAuthenticated()) {
-				
-				Object principal = authentication.getPrincipal();
-				// Em muitos cenários o principal é apenas o login (String)
-				if (principal instanceof String login) {
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				}
-				// Se em algum fluxo for UserDetails, também tratamos
-				else if (principal instanceof UserDetails) {
-
-					UserDetails userDetails = (UserDetails) principal;
-					String login = userDetails.getUsername();
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				
-				}
-			}
-
-			if (loggedUser.getRole() == UserRole.ADMIN || (loggedUser.equals(removedUser))) {
+			if (loggedUser != null && (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(removedUser))) {
 
 				this.uIRepository.delete(removedUser);
 				UserResponseDto uResponseDto = this.userMapper.userToUserResponseDto(removedUser);
@@ -393,29 +308,11 @@ public class UserService {
 
 		if (searchedUser != null) {
 
-			User loggedUser = null;
+			// Usa SessionService: sempre retorna o login (String)
+			String login = (String) this.sessionService.getLoggedUser().getBody();
+			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
-			// autenticação recebe autenticação do armazenador de contexto de segurança
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-			if (authentication != null && authentication.isAuthenticated()) {
-				
-				Object principal = authentication.getPrincipal();
-				// Em muitos cenários o principal é apenas o login (String)
-				if (principal instanceof String login) {
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				}
-				// Se em algum fluxo for UserDetails, também tratamos
-				else if (principal instanceof UserDetails) {
-
-					UserDetails userDetails = (UserDetails) principal;
-					String login = userDetails.getUsername();
-					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
-				
-				}
-			}
-
-			if (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(searchedUser)) {
+			if (loggedUser != null && (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(searchedUser))) {
 
 				List<String> devicesNames = searchedUser.getDispositivos().stream().map(d -> d.getNome())
 						.collect(Collectors.toList());
