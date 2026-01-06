@@ -26,7 +26,7 @@ import br.com.WiseMonitor.dados.IDeviceRepository;
 import br.com.WiseMonitor.dados.IUserRepository;
 import br.com.WiseMonitor.gerencia.SessionController;
 import br.com.WiseMonitor.modelos.Device;
-import br.com.WiseMonitor.modelos.DeviceRequestDto;
+import br.com.WiseMonitor.modelos.DeviceDto;
 import br.com.WiseMonitor.modelos.LoginRequest;
 import br.com.WiseMonitor.modelos.ResponseMessage;
 import br.com.WiseMonitor.modelos.User;

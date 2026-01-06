@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.WiseMonitor.modelos.Device;
+import br.com.WiseMonitor.modelos.DeviceDto;
 import br.com.WiseMonitor.servico.DeviceService;
 import jakarta.validation.Valid;
 
@@ -44,19 +45,19 @@ public class DeviceController {
 	}
 	
 	@PostMapping("/cadastroDispositivo")
-	public ResponseEntity<?> createDevice(@Valid @RequestBody String nome){
+	public ResponseEntity<?> createDevice(@Valid @RequestBody DeviceDto dto){
 		
-		return this.deviceService.createDevice(nome);
+		return this.deviceService.createDevice(dto);
 	
 		
 		
 	}
 	
-	@PutMapping("/edicaoDispositivo")
-	public ResponseEntity<?> editDevice(@Valid @RequestBody Device d){
+	@PutMapping("/edicaoDispositivo/{id}")
+	public ResponseEntity<?> editDevice(@PathVariable Long id,@Valid @RequestBody DeviceDto d){
 		
 		
-		return this.deviceService.editDevice(d);
+		return this.deviceService.editDevice(id,d);
 		
 	}
 	

@@ -1,6 +1,6 @@
 package br.com.WiseMonitor.modelos;
 
-public record DeviceRequestDto(
+public record DeviceDto(
 
     String nome
     

@@ -56,7 +56,7 @@ function Home({
 
         let tamBtns = objUser.dispositivos?.length
         setObjDevice(device)
-        alert("remove seleção" + JSON.stringify(tamBtns)) 
+        
         //alert("Tamanho dispositivos removendoSeleção : " + tamBtns)
         //alert(tamBtns + JSON.stringify(objUser.dispositivos) )
 

@@ -23,16 +23,12 @@ import jakarta.validation.constraints.NotEmpty;
 
 import lombok.Data;
 
-
-
-
 @Entity
 public class User implements UserDetails{
 
 		/**
 	 * 
 	 */
-	
 	
 		@Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)

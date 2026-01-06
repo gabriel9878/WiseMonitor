@@ -19,8 +19,6 @@ public class userDetailsService implements UserDetailsService {
 	
 	}
 
-
-
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
@@ -28,7 +26,5 @@ public class userDetailsService implements UserDetailsService {
 		
 	}
 
-	
-	
 	
 }

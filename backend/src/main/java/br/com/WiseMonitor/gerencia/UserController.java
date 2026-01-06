@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.WiseMonitor.modelos.DeviceRequestDto;
+import br.com.WiseMonitor.modelos.DeviceDto;
 import br.com.WiseMonitor.modelos.LoginRequest;
 import br.com.WiseMonitor.modelos.User;
 import br.com.WiseMonitor.modelos.UserDto;

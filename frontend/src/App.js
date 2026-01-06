@@ -54,7 +54,7 @@ function App() {
   //UseEffect
   useEffect(() => {
 
-
+    document.title = 'WiseMonitor';
 
   }, []);
 
