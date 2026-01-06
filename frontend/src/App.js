@@ -5,6 +5,7 @@ import './App.css';
 
 import FormCadastro from './FormCadastro';
 import FormLogin from './FormLogin';
+import FormEdicao from './FormEdicao';
 import Home from './Home';
 
 import { createBrowserRouter } from 'react-router-dom';
@@ -82,6 +83,18 @@ function App() {
 
   }
 
+  const prepararEdicaoUsuarioAtivo = () => {
+
+    // Copia os dados do usuario ativo (objUser) para o DTO usado pelo formulario de edicao
+    setObjUDto({
+      login: objUser.login,
+      senha: '',
+      cpf: objUser.cpf,
+      email: objUser.email
+    });
+
+  }
+
   async function trataRespostaJson(response) {
     
     const contentType = response.headers.get('content-type');
@@ -103,6 +116,25 @@ function App() {
     return data;
 
   }
+
+  const getAuthHeaders = () => {
+
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      return {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+    }
+
+    return {
+      'Content-type': 'application/json',
+      'Accept': 'application/json'
+    };
+
+  };
 
   const cadastrarUsuario = () => {
 
@@ -147,12 +179,7 @@ function App() {
 
       method: 'get',
 
-      headers: {
-
-        'Content-type': 'application/json',
-        'Accept': 'application/json'
-
-      }
+      headers: getAuthHeaders()
 
     }).then(trataRespostaJson)
       .then(retornoJson => {
@@ -179,12 +206,7 @@ function App() {
 
       method: 'put',
       body: JSON.stringify(objUDto),
-      headers: {
-
-        'Content-type': 'application/json',
-        'Accept': 'application/json'
-
-      }
+      headers: getAuthHeaders()
 
     })
 
@@ -217,8 +239,6 @@ function App() {
 
         }
 
-
-
       })
 
   }
@@ -228,12 +248,7 @@ function App() {
     fetch('http://127.0.0.1:8080/exclusaoUsuario/' + objUDto.id, {
 
       method: 'delete',
-      headers: {
-
-        'Content-type': 'application/json',
-        'Accept': 'application/json'
-
-      }
+      headers: getAuthHeaders()
 
     })
       .then(trataRespostaJson)
@@ -268,12 +283,7 @@ function App() {
 
       {
         method: 'get',
-        headers: {
-
-          'Content-type': 'application/json',
-          'Accept': 'application/json'
-
-        }
+        headers: getAuthHeaders()
 
       }).then(trataRespostaJson)
       .then(retornoJson => {
@@ -297,18 +307,13 @@ function App() {
 
   const salvaUsuarioAtivo = () => {
 
-    fetch('http://127.0.0.1:8080/salvaUsuarioAtivo',
+    fetch('http://127.0.0.1:8080/edicaoUsuario',
 
       {
 
         method: 'put',
         body: JSON.stringify(objUser),
-        headers: {
-
-          'Content-type': 'application/json',
-          'Accept': 'application/json'
-
-        }
+        headers: getAuthHeaders()
 
       }).then(trataRespostaJson)
       .then(retornoJson => {
@@ -334,7 +339,7 @@ function App() {
     {
 
       path: "/",
-      element: <FormLogin eventoTeclado={respostaTeclado} setObjUDto={setObjUDto} obj={objUDto} userDto={userDto}/>,
+  element: <FormLogin eventoTeclado={respostaTeclado} setObjUDto={setObjUDto} obj={objUDto} userDto={userDto} />,
 
     },
 
@@ -348,10 +353,19 @@ function App() {
 
     {
 
+      path: "editar",
+      element: <FormEdicao eventoTeclado={respostaTeclado} alterarUsuario={alterarUsuario}
+        obj={objUDto} />
+
+    },
+
+    {
+
       path: "home",
       element: <Home usersList={users} user={user} selecionaUsuarioAtivo={selecionaUsuarioAtivo}
         salvaUsuarioAtivo={salvaUsuarioAtivo} alterarUsuario={alterarUsuario} objUser={objUser}
-        setObjUser={setObjUser} userDto={userDto} setObjUDto={setObjUDto} trataRespostaJson={trataRespostaJson} />
+        setObjUser={setObjUser} userDto={userDto} setObjUDto={setObjUDto} trataRespostaJson={trataRespostaJson}
+        getAuthHeaders={getAuthHeaders} prepararEdicaoUsuarioAtivo={prepararEdicaoUsuarioAtivo} />
 
     }
 

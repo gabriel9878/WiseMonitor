@@ -23,13 +23,6 @@ public class SessionController {
 		super();
 		this.sessionService = sessionService;
 	}
-
-	@GetMapping("/")
-	public String loadInitialPage() {
-
-		return "Bem vindo";
-
-	}
 	
 	@PostMapping("/login")
 	public ResponseEntity<?> initializeSession(@Valid @RequestBody LoginRequest u){
@@ -37,28 +30,12 @@ public class SessionController {
 		return this.sessionService.initializeSession(u);
 		
 	}
-	/*
-	@GetMapping("/logoff")
-	public ResponseEntity<?> finalizeSession(){
-		
-		return this.sessionService.finalizeSession();
-		
-		
-	}
-
-	@GetMapping("/exibicaoUsuarioAtivo")
-	public ResponseEntity<?> selectLoggedUser() {
-
-		return this.sessionService.selectLoggedUser();
-
-	}
-
-	@PutMapping("/salvaUsuarioAtivo")
-	public ResponseEntity<?> saveLoggedUser(@Valid @RequestBody User u){
-
-		return this.sessionService.saveLoggedUser(u);
-
-	}
 	
-	*/
+	@GetMapping("/exibicaoLoginUsuarioAtivo")
+	public ResponseEntity<?> getLoggedUserLogin() {
+
+		return this.sessionService.getLoggedUserLogin();
+
+	}
+
 }

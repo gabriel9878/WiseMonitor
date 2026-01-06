@@ -43,6 +43,13 @@ public class UserController {
 
 	}
 
+	@GetMapping("/exibicaoUsuarioAtivo")
+	public ResponseEntity<?> getLoggedUser(){
+
+		return this.service.getLoggedUser();
+
+	}
+
 
 	@PostMapping("/cadastroUsuario")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody UserDto u) {

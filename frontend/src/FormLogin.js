@@ -25,13 +25,11 @@ function FormLogin({ obj, eventoTeclado, setObjUDto, userDto, limpaObjUDto}) {
                     throw new Error(text || `Erro HTTP ${response.status}`);
                 }
 
-                // guarda token no localStorage/sessionStorage
-                // localStorage.setItem('token', token);
-
                 return text;
             })
-            .then((text) => {
-                // Sucesso no login
+            .then((token) => {
+                // Sucesso no login: guarda token e vai para home
+                localStorage.setItem('token', token);
                 navigate("home");
                 setObjUDto(userDto);
             })

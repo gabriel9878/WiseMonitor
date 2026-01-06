@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import org.springframework.stereotype.Service;
@@ -50,6 +51,23 @@ public class UserService {
 		this.sessionService = sessionService;
 		this.passwordEncoder = passwordEncoder;
 	}
+
+	public ResponseEntity<?> getLoggedUser(){
+
+		String login = (String) this.sessionService.getLoggedUserLogin().getBody();
+		
+		if(login != null){
+			
+			User loggedUser;
+			loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+			return new ResponseEntity<>(loggedUser,HttpStatus.OK);
+
+		}
+
+		throw new UsernameNotFoundException("Não há usuário autenticado");
+
+	}
+
 	
 	public ResponseEntity<?> findUserByLogin(String loginRequest) {
 
@@ -58,7 +76,7 @@ public class UserService {
 		if (searchedUser != null) {
 
 			// Usa SessionService: sempre retorna o login (String)
-			String login = (String) this.sessionService.getLoggedUser().getBody();
+			String login = (String) this.sessionService.getLoggedUserLogin().getBody();
 			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
 			if (loggedUser != null &&
@@ -85,7 +103,7 @@ public class UserService {
 		if (searchedUser != null) {
 
 			// Usa SessionService: sempre retorna o login (String)
-			String login = (String) this.sessionService.getLoggedUser().getBody();
+			String login = (String) this.sessionService.getLoggedUserLogin().getBody();
 			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
 			if (loggedUser != null &&
@@ -214,7 +232,7 @@ public class UserService {
 
 	public ResponseEntity<?> findUsers() {
 		// Usa SessionService: sempre retorna o login (String)
-		String login = (String) this.sessionService.getLoggedUser().getBody();
+		String login = (String) this.sessionService.getLoggedUserLogin().getBody();
 		User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
 		if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN) {
@@ -233,46 +251,44 @@ public class UserService {
 
 	public ResponseEntity<?> editUser(UserDto userDto) {
 
-		if (userDto.login() == null || userDto.senha() == null || userDto.email() == null || userDto.cpf() == null) {
-
+		if (userDto.login() == null || userDto.email() == null || userDto.cpf() == null) {
 			return new ResponseEntity<>("Todos os campos devem ser preenchidos", HttpStatus.BAD_REQUEST);
-
 		}
 
 		User editedUser = this.uIRepository.findByLogin(userDto.login()).orElse(null);
 
 		if (editedUser != null) {
 
-			// Usa SessionService: sempre retorna o login (String)
-			String login = (String) this.sessionService.getLoggedUser().getBody();
+			String login = (String) this.sessionService.getLoggedUserLogin().getBody();
 			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
 			if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN) {
-
-				editedUser = this.userMapper.dtoToUser(userDto);
-				editedUser.setSenha(this.passwordEncoder.encode(editedUser.getSenha()));
-
-				this.uIRepository.save(editedUser);
-				return new ResponseEntity<>(this.userMapper.userToUserResponseDto(editedUser), HttpStatus.ACCEPTED);
-
+				// Admin pode editar qualquer usuário. Mantém a senha atual se nenhuma nova for informada.
+				User mappedUser = this.userMapper.dtoToUser(userDto);
+				if (userDto.senha() == null || userDto.senha().trim().isEmpty()) {
+					mappedUser.setSenha(editedUser.getSenha());
+				} else {
+					mappedUser.setSenha(this.passwordEncoder.encode(userDto.senha()));
+				}
+				this.uIRepository.save(mappedUser);
+				return new ResponseEntity<>(this.userMapper.userToUserResponseDto(mappedUser), HttpStatus.ACCEPTED);
 			}
 
 			if (loggedUser != null && loggedUser.equals(editedUser)) {
-
 				editedUser.setEmail(userDto.email());
 				editedUser.setCpf(userDto.cpf());
-				editedUser.setSenha(this.passwordEncoder.encode(userDto.senha()));
+				// Usuário editando o próprio perfil: só altera senha se uma nova for informada.
+				if (userDto.senha() != null && !userDto.senha().trim().isEmpty()) {
+					editedUser.setSenha(this.passwordEncoder.encode(userDto.senha()));
+				}
 				this.uIRepository.save(editedUser);
 				return new ResponseEntity<>(this.userMapper.userToUserResponseDto(editedUser), HttpStatus.ACCEPTED);
-
 			}
 
 			return new ResponseEntity<>("Você não possui permissão para editar esse usuário", HttpStatus.FORBIDDEN);
-
 		}
 
 		return new ResponseEntity<>("Não há usuário cadastrado com o login solicitado", HttpStatus.NOT_FOUND);
-
 	}
 
 	@Transactional
@@ -283,7 +299,7 @@ public class UserService {
 		if (removedUser != null) {
 
 			// Usa SessionService: sempre retorna o login (String)
-			String login = (String) this.sessionService.getLoggedUser().getBody();
+			String login = (String) this.sessionService.getLoggedUserLogin().getBody();
 			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
 			if (loggedUser != null && (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(removedUser))) {
@@ -309,7 +325,7 @@ public class UserService {
 		if (searchedUser != null) {
 
 			// Usa SessionService: sempre retorna o login (String)
-			String login = (String) this.sessionService.getLoggedUser().getBody();
+			String login = (String) this.sessionService.getLoggedUserLogin().getBody();
 			User loggedUser = this.uIRepository.findByLogin(login).orElse(null);
 
 			if (loggedUser != null && (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(searchedUser))) {

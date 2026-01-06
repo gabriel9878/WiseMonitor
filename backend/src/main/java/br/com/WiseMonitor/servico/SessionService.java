@@ -59,7 +59,7 @@ public class SessionService{
 	}
 
 
-    public ResponseEntity<?> getLoggedUser() {
+    public ResponseEntity<?> getLoggedUserLogin() {
         
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 

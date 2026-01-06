@@ -6,8 +6,9 @@ import { json, Link, useNavigate } from 'react-router-dom';
 
 function Home({
 
-    usersList, user, ObjUDto, objUser, userDto, setObjUser,setObjUDto,
-    selecionaUsuarioAtivo, salvaUsuarioAtivo, alterarUsuario,trataRespostaJson
+    usersList, user, ObjUDto, objUser, userDto, setObjUser, setObjUDto,
+    selecionaUsuarioAtivo, salvaUsuarioAtivo, alterarUsuario, trataRespostaJson,
+    getAuthHeaders, prepararEdicaoUsuarioAtivo
 
 }) {
 
@@ -53,10 +54,9 @@ function Home({
 
     const removeSelecaoDevices = () => {
 
-
         let tamBtns = objUser.dispositivos?.length
         setObjDevice(device)
-        alert("removeseleça" + JSON.stringify(tamBtns)) 
+        alert("remove seleção" + JSON.stringify(tamBtns)) 
         //alert("Tamanho dispositivos removendoSeleção : " + tamBtns)
         //alert(tamBtns + JSON.stringify(objUser.dispositivos) )
 
@@ -74,34 +74,18 @@ function Home({
 
     const logoff = (e) => {
 
-        e.preventDefault()
+        e.preventDefault()        
+        navigate("/")
+        setObjUDto(userDto)
+        setObjUser(user)
+        setObjDevice(device)
 
-        fetch("http://127.0.0.1:8080/logoff",
+    }
 
-            {
+    const irParaEdicaoUsuario = () => {
 
-                method: 'get',
-                headers: {
-
-                    'Content-type': 'application/json',
-                    'Accept': 'application/json'
-
-                }
-
-            }).then(trataRespostaJson)
-            .then(retornoJson => {
-
-
-                alert(retornoJson.mensagem)
-                navigate("/")
-                setObjUDto(userDto)
-                setObjUser(user)
-                
-
-
-            })
-
-
+        prepararEdicaoUsuarioAtivo();
+        navigate("/editar");
 
     }
 
@@ -113,12 +97,7 @@ function Home({
 
                 method: 'post',
                 body: JSON.stringify(objDDto),
-                headers: {
-
-                    'Content-type': 'application/json',
-                    'Accept': 'application/json'
-
-                }
+                headers: getAuthHeaders()
 
             }).then(trataRespostaJson)
             .then(respostaJson => {
@@ -148,7 +127,7 @@ function Home({
 
     /*const selecionarDispositivos = () => {
 
-        fetch("http://localhost:8080/exibicaoDispositivos", {
+        fetch("http://127.0.0.1:8080/exibicaoDispositivos", {
 
 
             method: 'get',
@@ -176,11 +155,7 @@ function Home({
         fetch('http://127.0.0.1:8080/exclusaoDispositivo/' + objDevice.id, {
 
             method: 'delete',
-            headers: {
-
-                'Content-type': 'application/json',
-                'Accept': 'application/json'
-            }
+            headers: getAuthHeaders()
 
         }).then(trataRespostaJson)
             .then(respostaJson => {
@@ -234,10 +209,7 @@ function Home({
   const listarDispositivosUsuario = useCallback(() => {
     fetch('http://127.0.0.1:8080/exibicaoDispositivosUsuario/' + objUser.id, {
       method: 'get',
-      headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json'
-      }
+            headers: getAuthHeaders()
     })
      .then(trataRespostaJson)
      .then(retornoJson => {
@@ -273,25 +245,27 @@ function Home({
 
     return (
 
-        <table className="table" >
+        <>
 
-            <thead>
+            <table className="table" >
 
-                <tr>
+                <thead>
 
-                    <th id="primeira">ID</th>
-                    <th>Login</th>
-                    <th>Email</th>
-                    <th>CPF</th>
-                    <th id="ultima">Dispositivos</th>
+                    <tr>
+
+                        <th id="primeira">ID</th>
+                        <th>Login</th>
+                        <th>Email</th>
+                        <th>CPF</th>
+                        <th id="ultima">Dispositivos</th>
 
 
-                </tr>
+                    </tr>
 
 
-            </thead>
+                </thead>
 
-            <tbody>
+                <tbody>
 
                 {
 
@@ -349,11 +323,14 @@ function Home({
 
                 }
 
-            </tbody>
-            <button type = "button" id="primario">Editar</button>
-            <button type = "button" id="secundario" onClick={logoff}>Sair</button>
+                </tbody>
 
-        </table>
+            </table>
+
+            <button type="button" id="primario" onClick={irParaEdicaoUsuario}>Editar perfil</button>
+            <button type="button" id="secundario" onClick={logoff}>Sair</button>
+
+        </>
 
 
 
