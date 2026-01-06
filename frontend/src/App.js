@@ -31,7 +31,7 @@ function App() {
     login: '',
     senha: '',
     cpf: '',
-    email: '',
+    email: ''
 
   }
 
@@ -82,10 +82,31 @@ function App() {
 
   }
 
+  async function trataRespostaJson(response) {
+    
+    const contentType = response.headers.get('content-type');
+    let data = null;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      // tenta ler texto para mostrar mensagem amigável
+      const text = await response.text();
+      throw new Error(text || `Erro HTTP ${response.status}`);
+    }
+
+    if (!response.ok) {
+      const msg = data.mensagem || `Erro HTTP ${response.status}`;
+      throw new Error(msg);
+    }
+
+    return data;
+
+  }
 
   const cadastrarUsuario = () => {
 
-    fetch('http://localhost:8080/cadastroUsuario', {
+    fetch('http://127.0.0.1:8080/cadastroUsuario', {
 
       method: 'post',
       body: JSON.stringify(objUDto),
@@ -96,7 +117,7 @@ function App() {
 
       }
 
-    }).then(retorno => retorno.json())
+    }).then(trataRespostaJson)
       .then(retornoJson => {
 
         if (retornoJson.mensagem !== undefined) {
@@ -111,7 +132,10 @@ function App() {
 
         }
 
+      }).catch(erro => {
 
+        alert('Erro ao cadastrar usuário' + erro.message)
+        console.error(erro)
 
       })
 
@@ -119,7 +143,7 @@ function App() {
 
   const selecionarUsuarios = () => {
 
-    fetch('http://localhost:8080/exibicaoUsuarios', {
+    fetch('http://127.0.0.1:8080/exibicaoUsuarios', {
 
       method: 'get',
 
@@ -130,7 +154,7 @@ function App() {
 
       }
 
-    }).then(retorno => retorno.json())
+    }).then(trataRespostaJson)
       .then(retornoJson => {
 
         if (retornoJson.mensagem) {
@@ -151,7 +175,7 @@ function App() {
 
   const alterarUsuario = () => {
 
-    fetch('http://localhost:8080/edicaoUsuario', {
+    fetch('http://127.0.0.1:8080/edicaoUsuario', {
 
       method: 'put',
       body: JSON.stringify(objUDto),
@@ -164,7 +188,7 @@ function App() {
 
     })
 
-      .then(retorno => retorno.json())
+      .then(trataRespostaJson)
       .then(retornoJson => {
 
         if (retornoJson.mensagem !== undefined) {
@@ -201,7 +225,7 @@ function App() {
 
   const removerUsuario = () => {
 
-    fetch('http://localhost:8080/exclusaoUsuario/' + objUDto.id, {
+    fetch('http://127.0.0.1:8080/exclusaoUsuario/' + objUDto.id, {
 
       method: 'delete',
       headers: {
@@ -212,7 +236,7 @@ function App() {
       }
 
     })
-      .then(retorno => retorno.json())
+      .then(trataRespostaJson)
       .then(retornoJson => {
 
         if (retornoJson.mensagem !== undefined) {
@@ -240,7 +264,7 @@ function App() {
 
   const selecionaUsuarioAtivo = () => {
 
-    fetch('http://localhost:8080/exibicaoUsuarioAtivo',
+    fetch('http://127.0.0.1:8080/exibicaoUsuarioAtivo',
 
       {
         method: 'get',
@@ -251,7 +275,7 @@ function App() {
 
         }
 
-      }).then(retorno => retorno.json())
+      }).then(trataRespostaJson)
       .then(retornoJson => {
 
         if (retornoJson.mensagem !== undefined) {
@@ -271,9 +295,9 @@ function App() {
 
   }
 
-const salvaUsuarioAtivo = () => {
+  const salvaUsuarioAtivo = () => {
 
-    fetch('http://localhost:8080/salvaUsuarioAtivo',
+    fetch('http://127.0.0.1:8080/salvaUsuarioAtivo',
 
       {
 
@@ -286,23 +310,23 @@ const salvaUsuarioAtivo = () => {
 
         }
 
-      }).then(retorno => retorno.json())
+      }).then(trataRespostaJson)
       .then(retornoJson => {
 
         if (retornoJson.mensagem !== undefined) {
 
           alert(retornoJson.mensagem)
           return
-          
+
         }
-        
+
         setObjUser(retornoJson)
         alert("ObjUser após ser salvo" + JSON.stringify(retornoJson))
 
-       })
+      })
 
 
-    }
+  }
 
 
 
@@ -310,7 +334,7 @@ const salvaUsuarioAtivo = () => {
     {
 
       path: "/",
-      element: <FormLogin eventoTeclado={respostaTeclado} setObjUDto={setObjUDto} obj={objUDto} userDto={userDto} />,
+      element: <FormLogin eventoTeclado={respostaTeclado} setObjUDto={setObjUDto} obj={objUDto} userDto={userDto}/>,
 
     },
 
@@ -327,7 +351,7 @@ const salvaUsuarioAtivo = () => {
       path: "home",
       element: <Home usersList={users} user={user} selecionaUsuarioAtivo={selecionaUsuarioAtivo}
         salvaUsuarioAtivo={salvaUsuarioAtivo} alterarUsuario={alterarUsuario} objUser={objUser}
-        setObjUser={setObjUser} userDto={userDto} setObjUDto={setObjUDto} />
+        setObjUser={setObjUser} userDto={userDto} setObjUDto={setObjUDto} trataRespostaJson={trataRespostaJson} />
 
     }
 

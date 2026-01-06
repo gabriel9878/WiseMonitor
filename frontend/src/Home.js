@@ -7,7 +7,7 @@ import { json, Link, useNavigate } from 'react-router-dom';
 function Home({
 
     usersList, user, ObjUDto, objUser, userDto, setObjUser,setObjUDto,
-    selecionaUsuarioAtivo, salvaUsuarioAtivo, alterarUsuario
+    selecionaUsuarioAtivo, salvaUsuarioAtivo, alterarUsuario,trataRespostaJson
 
 }) {
 
@@ -76,7 +76,7 @@ function Home({
 
         e.preventDefault()
 
-        fetch("http://localhost:8080/logoff",
+        fetch("http://127.0.0.1:8080/logoff",
 
             {
 
@@ -88,7 +88,7 @@ function Home({
 
                 }
 
-            }).then(retorno => retorno.json())
+            }).then(trataRespostaJson)
             .then(retornoJson => {
 
 
@@ -107,7 +107,7 @@ function Home({
 
     const cadastrarDispositivo = () => {
 
-        fetch("http://localhost:8080/cadastroDispositivo",
+        fetch("http://127.0.0.1:8080/cadastroDispositivo",
 
             {
 
@@ -120,7 +120,7 @@ function Home({
 
                 }
 
-            }).then(resposta => resposta.json())
+            }).then(trataRespostaJson)
             .then(respostaJson => {
 
                 if (respostaJson.mensagem !== undefined) {
@@ -159,7 +159,7 @@ function Home({
 
             }
 
-        }).then(resposta => resposta.json())
+        }).then(trataRespostaJson)
             .then(respostaJson => {
 
                 setDevices(respostaJson)
@@ -173,7 +173,7 @@ function Home({
 
     const removerDispositivo = () => {
 
-        fetch('http://localhost:8080/exclusaoDispositivo/' + objDevice.id, {
+        fetch('http://127.0.0.1:8080/exclusaoDispositivo/' + objDevice.id, {
 
             method: 'delete',
             headers: {
@@ -182,7 +182,7 @@ function Home({
                 'Accept': 'application/json'
             }
 
-        }).then(resposta => resposta.json())
+        }).then(trataRespostaJson)
             .then(respostaJson => {
 
                 if (respostaJson.mensagem !== undefined) {
@@ -223,8 +223,6 @@ function Home({
 
                     //alert("BtnsSeleção Após Remoção: " + JSON.stringify(tempBtnsSelecao))
 
-                    
-
                 }
 
             })
@@ -234,14 +232,14 @@ function Home({
 
     // Usando useCallback para memorizar a função
   const listarDispositivosUsuario = useCallback(() => {
-    fetch('http://localhost:8080/exibicaoDispositivosUsuario/' + objUser.id, {
+    fetch('http://127.0.0.1:8080/exibicaoDispositivosUsuario/' + objUser.id, {
       method: 'get',
       headers: {
         'Content-type': 'application/json',
         'Accept': 'application/json'
       }
     })
-     .then(retorno => retorno.json())
+     .then(trataRespostaJson)
      .then(retornoJson => {
         if (retornoJson.mensagem!== undefined) {
           alert(retornoJson.mensagem);
@@ -250,22 +248,17 @@ function Home({
         setObjUser({...objUser,dispositivos:retornoJson})
         removeSelecaoDevices();
         
-
       });
   }, [objUser,removeSelecaoDevices])
 
 
   useEffect(() => {
 
-       
-
             selecionaUsuarioAtivo();
             /*salvaUsuarioAtivo()
             removeSelecaoDevices()
             alert("Usuario Logado: " + JSON.stringify(objUser));
             setInitialize(true);*/
-
-        
 
     }, []);
 
@@ -326,7 +319,7 @@ function Home({
 
                                         {btnsSelecao[index] ?
 
-                                            (<button id="primario" onClick={() => selecionaDispositivoUsuario(dispositivo, index)} >Selecionar</button>
+                                            (<button type = "button" id="primario" onClick={() => selecionaDispositivoUsuario(dispositivo, index)} >Selecionar</button>
 
                                             ) :
 
@@ -338,9 +331,9 @@ function Home({
                                                     {"\nid:" + dispositivo.id}
                                                     <br />
 
-                                                    <button id="primario">Editar</button>
-                                                    <button id="secundario" onClick={() => removerDispositivo()}>Remover</button>
-                                                    <button id="secundario" onClick={() => removeSelecaoDevices()}>Cancelar</button>
+                                                    <button type = "button" id="primario">Editar</button>
+                                                    <button type = "button" id="secundario" onClick={() => removerDispositivo()}>Remover</button>
+                                                    <button type = "button" id="secundario" onClick={() => removeSelecaoDevices()}>Cancelar</button>
 
                                                 </div>
                                             )
@@ -357,8 +350,8 @@ function Home({
                 }
 
             </tbody>
-            <button id="primario">Editar</button>
-            <button id="secundario" onClick={logoff}>Sair</button>
+            <button type = "button" id="primario">Editar</button>
+            <button type = "button" id="secundario" onClick={logoff}>Sair</button>
 
         </table>
 

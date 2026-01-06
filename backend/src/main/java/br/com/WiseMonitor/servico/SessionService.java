@@ -8,12 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import org.springframework.stereotype.Service;
-
 
 import br.com.WiseMonitor.modelos.LoginRequest;
 import br.com.WiseMonitor.modelos.User;
@@ -22,13 +23,11 @@ import br.com.WiseMonitor.modelos.User;
 public class SessionService{
 	
     private AuthenticationManager authenticationManager;
-    private UserService userService;
     private UserDetailsService userDetailsService;
     private TokenService tokenService;
 
 	public SessionService(@Lazy AuthenticationManager authenticationManager,UserDetailsService userDetailsService,
 			TokenService tokenService) {
-		
 		
 		this.userDetailsService =  userDetailsService;
 		this.authenticationManager = authenticationManager;
@@ -59,98 +58,29 @@ public class SessionService{
 		
 	}
 
-	/*
-	public ResponseEntity<?> initializeSession(LoginRequest uDto) {
 
-        if (uDto.login().isEmpty() || uDto.senha().isEmpty()) {
-        	
+    public ResponseEntity<?> getLoggedUser() {
         
-            return new ResponseEntity<>("É necessário preencher todos os campos para efetuar login", HttpStatus.BAD_REQUEST);
-            
-        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        Optional<User> optionalUser = this.uIRepository.findByLogin(uDto.login());
+        if(auth != null && auth.isAuthenticated()){
 
-        if (optionalUser.isEmpty()) {
+            if(auth.getPrincipal() instanceof String texto){
 
-            
-            return new ResponseEntity<>("Não foi encontrado usuário com os dados informados", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(texto,HttpStatus.OK);
+                
+            }
 
-        }
+            if(auth.getPrincipal() instanceof UserDetails user){
 
-        User userRep = optionalUser.get();
+                return new ResponseEntity<>(user.getUsername(),HttpStatus.OK);
 
-        if (!this.passwordEncoder.matches(uDto.senha(), userRep.getSenha())) {
-
-            
-            return new ResponseEntity<>("Senha incorreta, tente novamente", HttpStatus.BAD_REQUEST);
+            }
 
         }
 
-        this.setUsuarioLogado(userRep);
-
-        return new ResponseEntity<>(this.getUsuarioLogado(), HttpStatus.ACCEPTED);
+        throw new UsernameNotFoundException("Não há usuário autenticado");
 
     }
-
-    public ResponseEntity<?> finalizeSession() {
-
-        this.setUsuarioLogado(null);
-        
-        return new ResponseEntity<>("Sessão finalizada com sucesso", HttpStatus.ACCEPTED);
-
-    }
-
-    public ResponseEntity<?> saveLoggedUser(User u){
-
-        if(this.getUsuarioLogado() == null){
-
-           
-            return new ResponseEntity<>("Não há usuário logado no sistema", HttpStatus.BAD_REQUEST);
-
-        }
-
-        if(!this.uIRepository.existsById(u.getId())){
-
-            
-            return new ResponseEntity<>("Usuario fornecido não possui o id compatível", HttpStatus.BAD_REQUEST);
-
-        }
-
-        
-        
-        if(!u.getDispositivos().isEmpty()){
-            
-        u.getDispositivos().forEach(d ->{ 
-            
-        this.dIRepository.save(d);
-        
-        });
-        
-        }
-        
-        this.setUsuarioLogado(u);
-        this.getUsuarioLogado().setSenha(this.passwordEncoder.encode(u.getSenha()));
-        this.uIRepository.save(this.getUsuarioLogado());
-        return new ResponseEntity<>(u,HttpStatus.OK);
-
-    }
-
-    public ResponseEntity<?> selectLoggedUser() {
-
-        if (this.getUsuarioLogado() != null) {
-
-            return new ResponseEntity<>(this.getUsuarioLogado(), HttpStatus.OK);
-
-        }
-
-        return new ResponseEntity<>("Não há usuário logado no sistema", HttpStatus.BAD_REQUEST);
-
-    }*/
-
-
-	
-
-
 
 }

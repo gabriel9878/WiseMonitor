@@ -1,48 +1,44 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 
-function FormLogin({ obj, eventoTeclado,setObjUDto,userDto,limpaObjUDto }) {
+function FormLogin({ obj, eventoTeclado, setObjUDto, userDto, limpaObjUDto}) {
 
     const navigate = useNavigate()
     //const [errorMessage, setErrorMessage] = useState('')
 
     const login = (e) => {
+        e.preventDefault();
 
-            e.preventDefault()
-            
-            fetch("http://localhost:8080/login",
+        fetch("http://127.0.0.1:8080/login", {
+            method: 'post',
+            body: JSON.stringify(obj),
+            headers: {
+                'Content-type': 'application/json',
+                'Accept': 'application/json'  // pode ser */* também
+            }
+        })
+            .then(async (response) => {
+                
+                const text = await response.text()
 
-                {
+                if (!response.ok) {
+                    // Trata erro: text pode ser mensagem de erro ou HTML
+                    throw new Error(text || `Erro HTTP ${response.status}`);
+                }
 
-                    method: 'post',
-                    body: JSON.stringify(obj),
-                    headers: {
+                // guarda token no localStorage/sessionStorage
+                // localStorage.setItem('token', token);
 
-                        'Content-type': 'application/json',
-                        'Accept': 'application/json'
-
-                    }
-
-                }).then(retorno=> retorno.json())
-                .then(retornoJson => {
-
-                    if (retornoJson.mensagem !== undefined) {
-                        
-                        
-                        alert(retornoJson.mensagem)
-
-                    }
-                    else{
-
-                        
-                        navigate("home")
-                        setObjUDto(userDto)
-                    }
-                    
-                    
-
-                })
-       
+                return text;
+            })
+            .then((text) => {
+                // Sucesso no login
+                navigate("home");
+                setObjUDto(userDto);
+            })
+            .catch((erro) => {
+                alert('Erro ao realizar login: ' + erro.message);
+                console.error(erro);
+            });
     }
 
     return (
@@ -53,7 +49,7 @@ function FormLogin({ obj, eventoTeclado,setObjUDto,userDto,limpaObjUDto }) {
 
                 <header>
 
-                    <h1>Wise Finder</h1>
+                    <h1>Wise Monitor</h1>
 
                 </header>
 
@@ -62,11 +58,8 @@ function FormLogin({ obj, eventoTeclado,setObjUDto,userDto,limpaObjUDto }) {
 
             <input type='password' value={obj.senha} onChange={eventoTeclado} name='senha' placeholder="Senha" className="form form-control" required />
 
-            <button id="primario" onClick={login}>Entrar </button>
+            <button type= "button" id="primario" onClick={login}>Entrar </button>
             <button type = "button" id="secundario"><Link to="/cadastrar">Cadastrar</Link> </button>
-
-
-
 
         </form>
 

@@ -30,7 +30,7 @@ public class SecurityConfiguration {
 
         return httpSecurity.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize.requestMatchers( "/login","/","/actuator/health").permitAll()
+                .authorizeHttpRequests(authorize -> authorize.requestMatchers( "/login","/cadastroUsuario","/","/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

@@ -6,6 +6,7 @@ import br.com.WiseMonitor.modelos.LoginRequest;
 import br.com.WiseMonitor.modelos.User;
 import br.com.WiseMonitor.modelos.UserDto;
 import br.com.WiseMonitor.modelos.UserResponseDto;
+import br.com.WiseMonitor.modelos.UserRole;
 
 @Service
 public class UserMapper {

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import org.springframework.stereotype.Service;
@@ -35,64 +36,46 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
-
+	
 	private UserMapper userMapper;
 	IUserRepository uIRepository;
+	private SessionService sessionService;
 	private BCryptPasswordEncoder passwordEncoder;
 
 	public UserService(UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, IUserRepository uIRepository) {
 
 		this.userMapper = userMapper;
 		this.uIRepository = uIRepository;
+		this.sessionService = sessionService;
 		this.passwordEncoder = passwordEncoder;
 	}
+	
+	public ResponseEntity<?> findUserByLogin(String loginRequest) {
 
-	public ResponseEntity<?> findUserByLogin(String login) {
-
-		User searchedUser = this.uIRepository.findByLogin(login).orElse(null);
-
-		if (searchedUser != null) {
-
-			User loggedUser = new User();
-
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-			if (authentication != null && authentication.isAuthenticated()) {
-
-				loggedUser = (User) authentication.getPrincipal();
-
-			}
-
-			if (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(searchedUser)) {
-
-				UserResponseDto uDto = this.userMapper.userToUserResponseDto(searchedUser);
-				return new ResponseEntity<>(uDto, HttpStatus.FOUND);
-
-			}
-
-			return new ResponseEntity<>("Você não tem permissão para visualizar esse usuário", HttpStatus.FORBIDDEN);
-
-		}
-
-		return new ResponseEntity<>("Não há usuário cadastrado com o login informado", HttpStatus.NOT_FOUND);
-
-	}
-
-	public ResponseEntity<?> findUserById(Long id) {
-
-		User searchedUser = this.uIRepository.findById(id).orElse(null);
+		User searchedUser = this.uIRepository.findByLogin(loginRequest).orElse(null);
 
 		if (searchedUser != null) {
 
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			User loggedUser = null;
 
-			User loggedUser = new User();
+			// autenticação recebe autenticação do armazenador de contexto de segurança
+			
+				Object principal = sessionService.getLoggedUser().getBody();
+				
+				//Esses dois ifs podem ser modularizados futuramente
+				//assim como nos métodos abaixo
+				if (principal instanceof String login) {
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				}
+				
+				else if(principal instanceof UserDetails) {
 
-			if (authentication != null && authentication.isAuthenticated()) {
-
-				loggedUser = (User) authentication.getPrincipal();
-
-			}
+					UserDetails userDetails = (UserDetails) principal;
+					String login = userDetails.getUsername();
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				
+				}
+			
 
 			if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN || (searchedUser.equals(loggedUser))) {
 
@@ -110,8 +93,82 @@ public class UserService {
 
 	}
 
-	public ResponseEntity<?> registerUser(UserDto uDto) {
+	public ResponseEntity<?> findUserById(Long id) {
 
+		User searchedUser = this.uIRepository.findById(id).orElse(null);
+
+		if (searchedUser != null) {
+
+			User loggedUser = null;
+
+			// autenticação recebe autenticação do armazenador de contexto de segurança
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+			if (authentication != null && authentication.isAuthenticated()) {
+				
+				Object principal = authentication.getPrincipal();
+				// Em muitos cenários o principal é apenas o login (String)
+				if (principal instanceof String login) {
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				}
+				// Se em algum fluxo for UserDetails, também tratamos
+				else if (principal instanceof UserDetails) {
+
+					UserDetails userDetails = (UserDetails) principal;
+					String login = userDetails.getUsername();
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				
+				}
+			}
+
+			if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN || (searchedUser.equals(loggedUser))) {
+
+				UserResponseDto uDto = this.userMapper.userToUserResponseDto(searchedUser);
+
+				return new ResponseEntity<>(uDto, HttpStatus.FOUND);
+
+			}
+
+			return new ResponseEntity<>("Você não possui permissão para visualizar esse usuário", HttpStatus.FORBIDDEN);
+
+		}
+
+		return new ResponseEntity<>("Não há usuário cadastrado com o id informado", HttpStatus.NOT_FOUND);
+
+	}
+	
+	//dev
+	/*
+	public ResponseEntity<?> registerUser(UserDto u) {
+
+		if (u.login().equals("") || u.senha().equals("")|| u.cpf().equals("") || u.email().equals("") || u.role().equals(null)) {
+
+			
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+		
+		} else if(this.uIRepository.existsByLogin(u.login()) || this.uIRepository.existsByCpf(u.cpf()) ) {
+			
+	
+			return new ResponseEntity<>( HttpStatus.BAD_REQUEST);
+			
+		} else {
+			// Codifica senha do usuário antes de salvar
+			
+			
+			
+			User user = this.userMapper.dtoToUser(u);
+			user.setSenha(this.passwordEncoder.encode(user.getSenha()));
+			
+			return new ResponseEntity<>(this.uIRepository.save(user), HttpStatus.CREATED);
+
+		}
+
+	}*/
+
+	public ResponseEntity<?> registerUser(UserDto uDto) {
+		
+		
 		if (uDto.login() == null || uDto.senha() == null || uDto.cpf() == null || uDto.email() == null) {
 
 			return new ResponseEntity<>("Todos os campos devem estar preenchidos", HttpStatus.BAD_REQUEST);
@@ -128,32 +185,43 @@ public class UserService {
 
 			}
 
-			User loggedUser = new User();
+			User loggedUser = null;
 
+			// autenticação recebe autenticação do armazenador de contexto de segurança
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 			if (authentication != null && authentication.isAuthenticated()) {
+				
+				Object principal = authentication.getPrincipal();
+				// Em muitos cenários o principal é apenas o login (String)
+				if (principal instanceof String login) {
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				}
+				// Se em algum fluxo for UserDetails, também tratamos
+				else if (principal instanceof UserDetails) {
 
-				loggedUser = (User) authentication.getPrincipal();
-
+					UserDetails userDetails = (UserDetails) principal;
+					String login = userDetails.getUsername();
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				
+				}
 			}
 
-			if (loggedUser.getRole() == UserRole.ADMIN) {
-
-				tempUser = this.userMapper.dtoToUser(uDto);
-				tempUser.setSenha(this.passwordEncoder.encode(tempUser.getSenha()));
-				this.uIRepository.save(tempUser);
-
-				UserResponseDto uResponseDto = this.userMapper.userToUserResponseDto(tempUser);
-
-				return new ResponseEntity<>(uResponseDto, HttpStatus.CREATED);
-
-			}
-
+			// Cria sempre um novo usuário a partir do DTO
 			tempUser = this.userMapper.dtoToUser(uDto);
-			tempUser.setRole(UserRole.USER);
+
+			// Define a role apenas com base no usuário logado
+			if (loggedUser != null && loggedUser.getRole() == UserRole.ADMIN) {
+				// Admin autenticado: se não houver uma role explícita no DTO, usa USER como padrão
+				if (tempUser.getRole() == null) {
+					tempUser.setRole(UserRole.USER);
+				}
+			} else {
+				// Cadastro público ou usuário não-admin: sempre USER
+				tempUser.setRole(UserRole.USER);
+			}
+
 			tempUser.setSenha(this.passwordEncoder.encode(tempUser.getSenha()));
-			
 			this.uIRepository.save(tempUser);
 
 			UserResponseDto uResponseDto = this.userMapper.userToUserResponseDto(tempUser);
@@ -167,7 +235,8 @@ public class UserService {
 	}
 
 	/*
-	 * //método para testes e depuração public ResponseEntity<?> findUsers(){
+	 * //método para testes e depuração
+	 //public ResponseEntity<?> findUsers(){
 	 * 
 	 * 
 	 * return new ResponseEntity<>(this.uIRepository.findAll(),HttpStatus.ACCEPTED);
@@ -177,26 +246,37 @@ public class UserService {
 
 	public ResponseEntity<?> findUsers() {
 
-		User loggedUser = new User();
+		User loggedUser = null;
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.isAuthenticated()) {
+			// autenticação recebe autenticação do armazenador de contexto de segurança
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+				
+				Object principal = authentication.getPrincipal();
+				// Em muitos cenários o principal é apenas o login (String)
+				if (principal instanceof String login) {
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				}
+				// Se em algum fluxo for UserDetails, também tratamos
+				else if (principal instanceof UserDetails) {
 
-			loggedUser = (User) authentication.getPrincipal();
-
-		}
+					UserDetails userDetails = (UserDetails) principal;
+					String login = userDetails.getUsername();
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				
+				}
+			
 
 		if (loggedUser.getRole() == UserRole.ADMIN) {
 
 			// Mapeia lista dos usuarios do repositorio
 			List<UserResponseDto> usersDtosList = this.uIRepository.findAll().stream()
-					.map(u -> this.userMapper.userToUserResponseDto(u)).collect(Collectors.toList());
+				.map(u -> this.userMapper.userToUserResponseDto(u)).collect(Collectors.toList());
 
 			return new ResponseEntity<>(usersDtosList, HttpStatus.ACCEPTED);
 
 		}
 
-		return new ResponseEntity<>("Você não tem permissão para visualizar outros usuários", HttpStatus.OK);
+		return new ResponseEntity<>("Você não tem permissão para visualizar outros usuários", HttpStatus.FORBIDDEN);
 
 	}
 
@@ -212,13 +292,26 @@ public class UserService {
 
 		if (editedUser != null) {
 
+		User loggedUser = null;
+
+			// autenticação recebe autenticação do armazenador de contexto de segurança
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			User loggedUser = new User();
 
 			if (authentication != null && authentication.isAuthenticated()) {
+				
+				Object principal = authentication.getPrincipal();
+				// Em muitos cenários o principal é apenas o login (String)
+				if (principal instanceof String login) {
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				}
+				// Se em algum fluxo for UserDetails, também tratamos
+				else if (principal instanceof UserDetails) {
 
-				loggedUser = (User) authentication.getPrincipal();
-
+					UserDetails userDetails = (UserDetails) principal;
+					String login = userDetails.getUsername();
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				
+				}
 			}
 
 			if (loggedUser.getRole() != null && loggedUser.getRole() == UserRole.ADMIN) {
@@ -256,14 +349,26 @@ public class UserService {
 
 		if (removedUser != null) {
 
+			User loggedUser = null;
+
+			// autenticação recebe autenticação do armazenador de contexto de segurança
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-			User loggedUser = new User();
-
 			if (authentication != null && authentication.isAuthenticated()) {
+				
+				Object principal = authentication.getPrincipal();
+				// Em muitos cenários o principal é apenas o login (String)
+				if (principal instanceof String login) {
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				}
+				// Se em algum fluxo for UserDetails, também tratamos
+				else if (principal instanceof UserDetails) {
 
-				loggedUser = (User) authentication.getPrincipal();
-
+					UserDetails userDetails = (UserDetails) principal;
+					String login = userDetails.getUsername();
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				
+				}
 			}
 
 			if (loggedUser.getRole() == UserRole.ADMIN || (loggedUser.equals(removedUser))) {
@@ -288,13 +393,26 @@ public class UserService {
 
 		if (searchedUser != null) {
 
+			User loggedUser = null;
+
+			// autenticação recebe autenticação do armazenador de contexto de segurança
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			User loggedUser = new User();
 
 			if (authentication != null && authentication.isAuthenticated()) {
+				
+				Object principal = authentication.getPrincipal();
+				// Em muitos cenários o principal é apenas o login (String)
+				if (principal instanceof String login) {
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				}
+				// Se em algum fluxo for UserDetails, também tratamos
+				else if (principal instanceof UserDetails) {
 
-				loggedUser = (User) authentication.getPrincipal();
-
+					UserDetails userDetails = (UserDetails) principal;
+					String login = userDetails.getUsername();
+					loggedUser = this.uIRepository.findByLogin(login).orElse(null);
+				
+				}
 			}
 
 			if (loggedUser.getRole() == UserRole.ADMIN || loggedUser.equals(searchedUser)) {

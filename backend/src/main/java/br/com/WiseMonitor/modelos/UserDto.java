@@ -10,10 +10,8 @@ public record UserDto(
     String cpf,
     
     String email,
-    
+
     UserRole role
-
-
     
 ){}
 
